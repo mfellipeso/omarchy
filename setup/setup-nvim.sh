@@ -64,7 +64,23 @@ append_block "$NVIM_DIR/lua/config/keymaps.lua" \
   'dotfiles.keymaps' \
   'require("dotfiles.keymaps")' || _finish 1
 
-# --- 4. Sincronizar os plugins ------------------------------------------------
+# --- 4. Tema da tela de instalação do lazy ------------------------------------
+# install.colorscheme é só o que o lazy pinta enquanto instala os plugins no
+# primeiro boot, antes de qualquer tema estar disponível. É cosmético, mas é o
+# último tokyonight sobrando. Diferente das linhas acima isto é a troca de um
+# valor num arquivo do Omarchy, então um update do pacote omarchy-nvim pode
+# desfazer — sem prejuízo nenhum, e rodar este script de novo recoloca.
+info "Verificando o install.colorscheme do lazy..."
+if grep -qF '{ "ashen", "habamax" }' "$NVIM_DIR/lua/config/lazy.lua"; then
+  skipped "install.colorscheme já é ashen"
+elif grep -qF '{ "tokyonight", "habamax" }' "$NVIM_DIR/lua/config/lazy.lua"; then
+  sed -i 's/{ "tokyonight", "habamax" }/{ "ashen", "habamax" }/' "$NVIM_DIR/lua/config/lazy.lua"
+  ok "install.colorscheme trocado para ashen"
+else
+  skipped "install.colorscheme não está no formato esperado — deixando como está"
+fi
+
+# --- 5. Sincronizar os plugins ------------------------------------------------
 need_cmd nvim "pacman -S neovim" || _finish 1
 
 info "Sincronizando os plugins (lazy sync)..."
@@ -76,7 +92,7 @@ else
   _finish 1
 fi
 
-# --- 5. Validar ---------------------------------------------------------------
+# --- 6. Validar ---------------------------------------------------------------
 info "Validando a config..."
 errors="$(nvim --headless "+lua vim.cmd('qa')" 2>&1 | grep -iE "error|E[0-9]+:" || true)"
 if [[ -n "$errors" ]]; then

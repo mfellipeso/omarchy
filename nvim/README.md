@@ -19,15 +19,24 @@ O namespace é `dotfiles.` justamente para não colidir com o `config.` e o
 
 ## Tema
 
-Não há nada de tema aqui. O Omarchy 4 resolve isso sozinho: ele symlinka
-`lua/plugins/theme.lua` para `~/.local/state/omarchy/current/theme/neovim.lua`,
-pré-carrega todos os colorschemes em `all-themes.lua` e faz hot-reload no
-`omarchy theme set`.
+Quem manda no tema é o Omarchy: ele symlinka `lua/plugins/theme.lua` para
+`~/.local/state/omarchy/current/theme/neovim.lua`, pré-carrega todos os
+colorschemes em `all-themes.lua` e faz hot-reload no `omarchy theme set`.
 
-A config antiga tinha um `colorscheme.lua` que lia
-`~/.config/omarchy/current/theme/neovim.lua` — caminho do Omarchy 3, que não
-existe mais. Trazê-lo faria ele cair no fallback tokyonight e brigar com o
-`theme.lua` pelo `opts.colorscheme`.
+`dotfiles/plugins/colorscheme.lua` só existe como rede: enquanto aquele symlink
+resolver, ele devolve `{}` e não disputa o `opts.colorscheme`. Sem Omarchy — ou
+com o symlink quebrado — o LazyVim cairia no default dele, tokyonight; aqui o
+fallback é o ashen, o mesmo do tema Solitude.
+
+O teste é pela presença do `theme.lua`, e não pelo caminho do tema em
+`~/.local/state`: é o symlink que decide se o Omarchy está no controle, e
+`fs_stat` o segue, então um link pendurado também cai para o fallback.
+
+O `install.colorscheme` do `lazy.lua` também aponta para o ashen. Ele é só o que
+o lazy pinta enquanto instala os plugins no primeiro boot — cosmético, e a
+única linha em que trocamos um valor de arquivo do Omarchy em vez de acrescentar
+uma. Um update do pacote `omarchy-nvim` pode desfazer; rodar o
+`setup/setup-nvim.sh` de novo recoloca.
 
 ## lazy-lock.json
 
