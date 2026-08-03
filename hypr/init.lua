@@ -14,6 +14,7 @@
 
 local dir = os.getenv("HOME") .. "/.dotfiles/hypr/"
 
+dofile(dir .. "env.lua")
 dofile(dir .. "input.lua")
 dofile(dir .. "bindings.lua")
 dofile(dir .. "windows.lua")
