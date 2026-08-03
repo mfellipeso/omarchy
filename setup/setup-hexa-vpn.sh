@@ -40,7 +40,7 @@ info "Verificando os pacotes de L2TP/IPsec..."
 # com set -euo pipefail, isso mataria o script justamente na máquina nova em
 # que ele mais precisa rodar.
 before="$(pacman -Qq "${PACKAGES[@]}" 2>/dev/null | wc -l || true)"
-pacman_install "${PACKAGES[@]}"
+pkg_install "${PACKAGES[@]}"
 after="$(pacman -Qq "${PACKAGES[@]}" 2>/dev/null | wc -l || true)"
 
 # O NetworkManager só enxerga o plugin de VPN depois de reiniciar, mas só vale

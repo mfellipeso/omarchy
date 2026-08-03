@@ -20,7 +20,7 @@ btrfs_subvol_nocow "$DOCKER_DATA_DIR" docker
 
 # --- 2. Pacotes ---------------------------------------------------------------
 info "Pacotes Docker..."
-pacman_install "${PACKAGES[@]}"
+pkg_install "${PACKAGES[@]}"
 
 # --- 3. Serviço docker --------------------------------------------------------
 enable_service docker

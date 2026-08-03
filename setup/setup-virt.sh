@@ -17,7 +17,7 @@ btrfs_subvol_nocow "$VM_DIR" libvirtd
 
 # --- 2. Pacotes ---------------------------------------------------------------
 info "Pacotes de virtualização..."
-pacman_install "${PACKAGES[@]}"
+pkg_install "${PACKAGES[@]}"
 
 # --- 3. firewall_backend = iptables ------------------------------------------
 info "Verificando $NETWORK_CONF..."

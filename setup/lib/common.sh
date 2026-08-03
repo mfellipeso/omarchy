@@ -41,13 +41,16 @@ need_cmd() {
   fi
 }
 
-# pacman_install pkg1 pkg2 ...
+# pkg_install pkg1 pkg2 ...
 #
-# Prefere `omarchy pkg add`, que além de instalar só o que falta usa --needed e
-# reconfere pacote a pacote no fim — pegando o caso em que o pacman sai 0 sem
-# ter registrado a instalação. Cai para o pacman direto fora do Omarchy, para
-# estes scripts seguirem rodando num Arch puro.
-pacman_install() {
+# Sempre por `omarchy pkg add`, que usa --needed e reconfere pacote a pacote no
+# fim — pegando o caso em que o pacman sai 0 sem ter registrado a instalação.
+# Este repo é só para Omarchy, então não há fallback para o pacman direto: sem
+# o comando `omarchy` o script para em vez de instalar por fora do tooling dele.
+#
+# O `pacman -Q` do laço é só consulta, para o log dizer o que já estava lá e
+# para não pedir sudo quando não falta nada.
+pkg_install() {
   local to_install=()
   local pkg
   for pkg in "$@"; do
@@ -60,11 +63,15 @@ pacman_install() {
 
   [[ ${#to_install[@]} -eq 0 ]] && return 0
 
+  need_cmd omarchy "este repo é só para Omarchy" || return 1
+
   info "Instalando: ${to_install[*]}"
-  if command -v omarchy &>/dev/null; then
-    omarchy pkg add "${to_install[@]}"
-  else
-    sudo pacman -S --noconfirm --needed "${to_install[@]}"
+  # Status checado na mão em vez de contar com o `set -e` de quem chama: dentro
+  # de função ele depende de como a chamada é feita, e um `if pkg_install ...`
+  # o desliga inteiro.
+  if ! omarchy pkg add "${to_install[@]}"; then
+    err "omarchy pkg add falhou para: ${to_install[*]}"
+    return 1
   fi
   ok "${#to_install[@]} pacote(s) instalado(s)"
 }

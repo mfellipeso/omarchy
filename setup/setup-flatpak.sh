@@ -16,7 +16,7 @@ btrfs_subvol_nocow "$FLATPAK_DATA_DIR"
 
 # --- 2. Pacotes ---------------------------------------------------------------
 info "Pacotes Flatpak..."
-pacman_install "${PACKAGES[@]}"
+pkg_install "${PACKAGES[@]}"
 
 # --- 3. Remote Flathub --------------------------------------------------------
 info "Verificando remote flathub..."
