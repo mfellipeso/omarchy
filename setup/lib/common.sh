@@ -20,9 +20,16 @@ err()     { echo -e "${RED}    erro: $*${RESET}"; }
 
 DOTFILES_DIR="${DOTFILES_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
 
-# Permite return quando sourced, exit quando executado direto.
+# Encerra o script atual com o código dado.
+#
+# A versão antiga tentava `return ... || exit ...` para servir tanto a scripts
+# sourced quanto executados. Não funciona: dentro de uma função, `return` sai da
+# função e o `|| exit` nunca roda, então o script seguia adiante como se nada
+# tivesse acontecido. `exit` dentro de uma função encerra o script inteiro, que
+# é o comportamento desejado — e o setup.sh executa cada script num processo
+# próprio, então isso não derruba o orquestrador.
 _finish() {
-  return "${1:-0}" 2>/dev/null || exit "${1:-0}"
+  exit "${1:-0}"
 }
 
 # need_cmd <cmd> [hint]
@@ -35,6 +42,11 @@ need_cmd() {
 }
 
 # pacman_install pkg1 pkg2 ...
+#
+# Prefere `omarchy pkg add`, que além de instalar só o que falta usa --needed e
+# reconfere pacote a pacote no fim — pegando o caso em que o pacman sai 0 sem
+# ter registrado a instalação. Cai para o pacman direto fora do Omarchy, para
+# estes scripts seguirem rodando num Arch puro.
 pacman_install() {
   local to_install=()
   local pkg
@@ -45,11 +57,16 @@ pacman_install() {
       to_install+=("$pkg")
     fi
   done
-  if [[ ${#to_install[@]} -gt 0 ]]; then
-    info "Instalando: ${to_install[*]}"
-    sudo pacman -S --noconfirm "${to_install[@]}"
-    ok "${#to_install[@]} pacote(s) instalado(s)"
+
+  [[ ${#to_install[@]} -eq 0 ]] && return 0
+
+  info "Instalando: ${to_install[*]}"
+  if command -v omarchy &>/dev/null; then
+    omarchy pkg add "${to_install[@]}"
+  else
+    sudo pacman -S --noconfirm --needed "${to_install[@]}"
   fi
+  ok "${#to_install[@]} pacote(s) instalado(s)"
 }
 
 # enable_service <unit>

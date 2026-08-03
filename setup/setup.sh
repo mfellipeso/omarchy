@@ -23,6 +23,7 @@ SETUP_SCRIPTS=(
 
   # 4) Preferências do Omarchy aplicadas por comando (fonte, tema, barra)
   setup-omarchy.sh
+  setup-hexa-vpn.sh
 )
 # =============================================================================
 
@@ -46,10 +47,14 @@ for script in "${SETUP_SCRIPTS[@]}"; do
     continue
   fi
 
-  # shellcheck source=/dev/null
-  source "$path"
-
-  echo -e "${GREEN} $script concluído${RESET}"
+  # Executado, não sourced: cada script já carrega o lib/common.sh sozinho, e
+  # rodar em processo próprio faz `exit`/`_finish` encerrarem apenas aquele
+  # script — além de impedir que um `set -e` derrube o orquestrador inteiro.
+  if bash "$path"; then
+    echo -e "${GREEN} $script concluído${RESET}"
+  else
+    err "$script falhou (exit $?) — seguindo para o próximo"
+  fi
   echo ""
 done
 
