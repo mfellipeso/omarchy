@@ -131,7 +131,7 @@ btrfs_subvol_nocow() {
 # stow_pkg <name> — linka pacote na raiz de $DOTFILES_DIR
 stow_pkg() {
   local name="$1"
-  need_cmd stow "pacman -S stow" || return 1
+  need_cmd stow "omarchy pkg add stow" || return 1
   stow --dir="$DOTFILES_DIR" --target="$HOME" "$name"
 }
 

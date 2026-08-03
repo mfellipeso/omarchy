@@ -10,9 +10,25 @@ set -euo pipefail
 # options no options.lua (antes do lazy subir) e os keymaps no keymaps.lua
 # (VeryLazy, depois dos defaults do LazyVim, para os overrides vencerem).
 #
-# Nada de tema aqui: o Omarchy 4 já symlinka lua/plugins/theme.lua para o tema
-# atual e faz hot-reload sozinho.
+# Os extras do LazyVim não entram por import: vão para o lazyvim.json, que é o
+# arquivo que o :LazyExtras edita. Assim o LazyVim resolve a ordem deles sozinho
+# e o lazy.lua fica com um import nosso só.
+#
+# Nada de tema aqui: o Omarchy symlinka lua/plugins/theme.lua para o tema atual
+# e faz hot-reload sozinho.
 # =============================================================================
+
+NVIM_EXTRAS=(
+  lazyvim.plugins.extras.lang.typescript
+  lazyvim.plugins.extras.lang.docker
+  lazyvim.plugins.extras.lang.json
+  lazyvim.plugins.extras.lang.prisma
+  lazyvim.plugins.extras.lang.python
+  lazyvim.plugins.extras.lang.tailwind
+  lazyvim.plugins.extras.lang.go
+  lazyvim.plugins.extras.linting.eslint
+  lazyvim.plugins.extras.formatting.prettier
+)
 
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib/common.sh"
 
@@ -48,6 +64,7 @@ insert_block_after "$NVIM_DIR/lua/config/lazy.lua" \
   '      -- Config pessoal, mantida em ~/.dotfiles.
       paths = { vim.fn.expand("~/.dotfiles/nvim") },' || _finish 1
 
+# Depois do import "plugins" do Omarchy, para os overrides daqui vencerem.
 insert_block_after "$NVIM_DIR/lua/config/lazy.lua" \
   '{ import = "plugins" },' \
   'import = "dotfiles.plugins"' \
@@ -64,24 +81,30 @@ append_block "$NVIM_DIR/lua/config/keymaps.lua" \
   'dotfiles.keymaps' \
   'require("dotfiles.keymaps")' || _finish 1
 
-# --- 4. Tema da tela de instalação do lazy ------------------------------------
-# install.colorscheme é só o que o lazy pinta enquanto instala os plugins no
-# primeiro boot, antes de qualquer tema estar disponível. É cosmético, mas é o
-# último tokyonight sobrando. Diferente das linhas acima isto é a troca de um
-# valor num arquivo do Omarchy, então um update do pacote omarchy-nvim pode
-# desfazer — sem prejuízo nenhum, e rodar este script de novo recoloca.
-info "Verificando o install.colorscheme do lazy..."
-if grep -qF '{ "ashen", "habamax" }' "$NVIM_DIR/lua/config/lazy.lua"; then
-  skipped "install.colorscheme já é ashen"
-elif grep -qF '{ "tokyonight", "habamax" }' "$NVIM_DIR/lua/config/lazy.lua"; then
-  sed -i 's/{ "tokyonight", "habamax" }/{ "ashen", "habamax" }/' "$NVIM_DIR/lua/config/lazy.lua"
-  ok "install.colorscheme trocado para ashen"
+# --- 4. Extras do LazyVim -----------------------------------------------------
+# Mesmo arquivo e mesmo formato que o :LazyExtras grava. Só acrescentamos: o que
+# o Omarchy já tiver marcado ali continua marcado.
+info "Verificando os extras em $NVIM_DIR/lazyvim.json..."
+need_cmd jq "omarchy pkg add jq" || _finish 1
+
+lazyvim_json="$NVIM_DIR/lazyvim.json"
+[[ -f "$lazyvim_json" ]] || echo '{}' >"$lazyvim_json"
+
+wanted="$(printf '%s\n' "${NVIM_EXTRAS[@]}" | jq -R . | jq -s .)"
+
+if jq -e --argjson want "$wanted" '(.extras // []) as $have
+    | $want - $have | length == 0' "$lazyvim_json" >/dev/null; then
+  skipped "os ${#NVIM_EXTRAS[@]} extras já estão no lazyvim.json"
 else
-  skipped "install.colorscheme não está no formato esperado — deixando como está"
+  tmp="$(mktemp)"
+  jq --argjson want "$wanted" '.extras = ((.extras // []) + $want | unique)' \
+    "$lazyvim_json" >"$tmp"
+  mv "$tmp" "$lazyvim_json"
+  ok "extras gravados no lazyvim.json"
 fi
 
 # --- 5. Sincronizar os plugins ------------------------------------------------
-need_cmd nvim "pacman -S neovim" || _finish 1
+need_cmd nvim "omarchy pkg add neovim" || _finish 1
 
 info "Sincronizando os plugins (lazy sync)..."
 # `Lazy! sync` roda sem esperar UI; o wait faz o headless segurar até terminar.

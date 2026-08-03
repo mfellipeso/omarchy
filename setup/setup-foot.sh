@@ -41,7 +41,7 @@ info "Verificando $FOOT_INI..."
 append_block "$FOOT_INI" "$MARKER" "$BLOCK" || _finish 1
 
 # --- 3. Validar ---------------------------------------------------------------
-if ! need_cmd foot "pacman -S foot"; then
+if ! need_cmd foot "omarchy pkg add foot"; then
   skipped "foot não instalado — validação pulada"
   _finish 0
 fi

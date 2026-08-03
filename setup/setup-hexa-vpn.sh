@@ -68,7 +68,7 @@ else
 fi
 
 if [[ -d "$plugin_dir" ]]; then
-  need_cmd jq "pacman -S jq" || _finish 1
+  need_cmd jq "omarchy pkg add jq" || _finish 1
   omarchy_plugin_enable "$PLUGIN_ID" "${PLUGIN_PLACEMENT[@]}"
 fi
 
