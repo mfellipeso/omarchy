@@ -10,36 +10,10 @@ set -euo pipefail
 # options no options.lua (antes do lazy subir) e os keymaps no keymaps.lua
 # (VeryLazy, depois dos defaults do LazyVim, para os overrides vencerem).
 #
-# Os extras do LazyVim não entram por import: vão para o lazyvim.json, que é o
-# arquivo que o :LazyExtras edita. Assim o LazyVim resolve a ordem deles sozinho
-# e o lazy.lua fica com um import nosso só.
-#
-# Nada de tema aqui: o Omarchy symlinka lua/plugins/theme.lua para o tema atual
-# e faz hot-reload sozinho.
+# Só isso. Extras do LazyVim, explorer e tema são do Omarchy: o lazyvim.json e o
+# lua/plugins dele não são tocados. O que entra por aqui são binds e
+# preferências, nada que troque um default dele.
 # =============================================================================
-
-NVIM_EXTRAS=(
-  lazyvim.plugins.extras.editor.snacks_explorer
-  lazyvim.plugins.extras.lang.typescript
-  lazyvim.plugins.extras.lang.docker
-  lazyvim.plugins.extras.lang.json
-  lazyvim.plugins.extras.lang.prisma
-  lazyvim.plugins.extras.lang.python
-  lazyvim.plugins.extras.lang.tailwind
-  lazyvim.plugins.extras.lang.go
-  lazyvim.plugins.extras.linting.eslint
-  lazyvim.plugins.extras.formatting.prettier
-)
-
-# O Omarchy marca o extra do neo-tree. Ele e o do snacks_explorer disputam o
-# mesmo <leader>e, e é o extra que liga cada explorer: o do snacks só existe se
-# `editor.snacks_explorer` estiver marcado (é ele que passa `opts.explorer`, que
-# por sua vez substitui o netrw). Desmarcar aqui é o mesmo que faria o
-# :LazyExtras — desabilitar só o plugin do neo-tree deixaria os dois desligados
-# e o netrw assumindo os diretórios.
-NVIM_EXTRAS_REMOVE=(
-  lazyvim.plugins.extras.editor.neo-tree
-)
 
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib/common.sh"
 
@@ -92,34 +66,7 @@ append_block "$NVIM_DIR/lua/config/keymaps.lua" \
   'dotfiles.keymaps' \
   'require("dotfiles.keymaps")' || _finish 1
 
-# --- 4. Extras do LazyVim -----------------------------------------------------
-# Mesmo arquivo e mesmo formato que o :LazyExtras grava. Fora os de
-# NVIM_EXTRAS_REMOVE, só acrescentamos: o que o Omarchy já tiver marcado ali
-# continua marcado.
-info "Verificando os extras em $NVIM_DIR/lazyvim.json..."
-need_cmd jq "omarchy pkg add jq" || _finish 1
-
-lazyvim_json="$NVIM_DIR/lazyvim.json"
-[[ -f "$lazyvim_json" ]] || echo '{}' >"$lazyvim_json"
-
-wanted="$(printf '%s\n' "${NVIM_EXTRAS[@]}" | jq -R . | jq -s .)"
-unwanted="$(printf '%s\n' "${NVIM_EXTRAS_REMOVE[@]}" | jq -R . | jq -s .)"
-
-if jq -e --argjson want "$wanted" --argjson drop "$unwanted" \
-    '(.extras // []) as $have
-     | ($want - $have | length == 0) and ($drop - ($drop - $have) | length == 0)' \
-    "$lazyvim_json" >/dev/null; then
-  skipped "os extras do lazyvim.json já estão como esperado"
-else
-  tmp="$(mktemp)"
-  jq --argjson want "$wanted" --argjson drop "$unwanted" \
-    '.extras = (((.extras // []) + $want | unique) - $drop)' \
-    "$lazyvim_json" >"$tmp"
-  mv "$tmp" "$lazyvim_json"
-  ok "extras gravados no lazyvim.json"
-fi
-
-# --- 5. Sincronizar os plugins ------------------------------------------------
+# --- 4. Sincronizar os plugins ------------------------------------------------
 need_cmd nvim "omarchy pkg add neovim" || _finish 1
 
 info "Sincronizando os plugins (lazy sync)..."
@@ -131,7 +78,7 @@ else
   _finish 1
 fi
 
-# --- 6. Validar ---------------------------------------------------------------
+# --- 5. Validar ---------------------------------------------------------------
 info "Validando a config..."
 errors="$(nvim --headless "+lua vim.cmd('qa')" 2>&1 | grep -iE "error|E[0-9]+:" || true)"
 if [[ -n "$errors" ]]; then
