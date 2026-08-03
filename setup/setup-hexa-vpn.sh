@@ -132,6 +132,7 @@ done
 
 current_routes="$(nmcli -t -f ipv4.routes connection show "$VPN_NAME" | cut -d: -f2-)"
 current_never="$(nmcli -t -f ipv4.never-default connection show "$VPN_NAME" | cut -d: -f2-)"
+current_ipv6="$(nmcli -t -f ipv6.method connection show "$VPN_NAME" | cut -d: -f2-)"
 
 needs_routes=false
 for route in "${VPN_ROUTES[@]}"; do
@@ -141,14 +142,18 @@ for route in "${VPN_ROUTES[@]}"; do
   fi
 done
 
-if [[ "$needs_routes" == "false" && "$current_never" == "yes" ]]; then
-  skipped "rotas e split tunnel já aplicados em '$VPN_NAME'"
+if [[ "$needs_routes" == "false" && "$current_never" == "yes" && "$current_ipv6" == "disabled" ]]; then
+  skipped "rotas, split tunnel e IPv6 já aplicados em '$VPN_NAME'"
   _finish 0
 fi
 
-info "Aplicando split tunnel: ${VPN_ROUTES[*]} com metric $VPN_METRIC"
+# never-default descarta a rota padrão que o servidor empurra; ipv6.method
+# disabled derruba endereço e rotas v6 do túnel de uma vez, em vez de depender
+# de um never-default v6 que só cobriria a rota padrão.
+info "Aplicando split tunnel: ${VPN_ROUTES[*]} com metric $VPN_METRIC, IPv6 desligado"
 nmcli connection modify "$VPN_NAME" \
   ipv4.never-default yes \
+  ipv6.method disabled \
   ipv4.routes "$desired_routes"
 ok "rotas aplicadas em '$VPN_NAME'"
 
