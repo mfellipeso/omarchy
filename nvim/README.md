@@ -32,8 +32,14 @@ Assim o LazyVim resolve sozinho a ordem que ele mesmo exige (`lazyvim.plugins`
 Importar extras por um módulo nosso quebrava essa ordem e o LazyVim reclamava em
 cima da tela.
 
-O setup só acrescenta: o que o Omarchy já tiver marcado no `lazyvim.json`
-continua marcado.
+O setup só acrescenta, com uma exceção: ele troca o extra `editor.neo-tree`, que
+o Omarchy marca, pelo `editor.snacks_explorer`. Fora essa, o que o Omarchy tiver
+marcado ali continua marcado.
+
+A troca tem que ser no extra, não no plugin. É o extra que liga cada explorer —
+o `snacks_explorer` é quem passa `opts.explorer`, e é esse opts que faz o snacks
+substituir o netrw e abrir diretório. Desabilitar só o plugin do neo-tree
+deixava os dois explorers desligados e o netrw assumindo o `nvim .`.
 
 ## Tema
 

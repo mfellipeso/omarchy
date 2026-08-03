@@ -1,10 +1,7 @@
--- O Omarchy liga o extra editor.neo-tree no lazyvim.json dele, e o neo-tree
--- também reivindica <leader>e. Como a preferência aqui é o explorer do snacks,
--- ele é desligado daqui em vez de mexer no lazyvim.json — apagar este arquivo
--- devolve o padrão do Omarchy.
+-- Quem liga o explorer do snacks é o extra editor.snacks_explorer, trocado pelo
+-- editor.neo-tree do Omarchy no setup-nvim.sh. Aqui só ajustamos o layout e
+-- fazemos o <leader>e abrir na raiz do git em vez da raiz do LSP/cwd.
 return {
-  { "nvim-neo-tree/neo-tree.nvim", enabled = false },
-
   {
     "folke/snacks.nvim",
     opts = {

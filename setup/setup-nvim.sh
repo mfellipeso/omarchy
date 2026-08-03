@@ -19,6 +19,7 @@ set -euo pipefail
 # =============================================================================
 
 NVIM_EXTRAS=(
+  lazyvim.plugins.extras.editor.snacks_explorer
   lazyvim.plugins.extras.lang.typescript
   lazyvim.plugins.extras.lang.docker
   lazyvim.plugins.extras.lang.json
@@ -28,6 +29,16 @@ NVIM_EXTRAS=(
   lazyvim.plugins.extras.lang.go
   lazyvim.plugins.extras.linting.eslint
   lazyvim.plugins.extras.formatting.prettier
+)
+
+# O Omarchy marca o extra do neo-tree. Ele e o do snacks_explorer disputam o
+# mesmo <leader>e, e é o extra que liga cada explorer: o do snacks só existe se
+# `editor.snacks_explorer` estiver marcado (é ele que passa `opts.explorer`, que
+# por sua vez substitui o netrw). Desmarcar aqui é o mesmo que faria o
+# :LazyExtras — desabilitar só o plugin do neo-tree deixaria os dois desligados
+# e o netrw assumindo os diretórios.
+NVIM_EXTRAS_REMOVE=(
+  lazyvim.plugins.extras.editor.neo-tree
 )
 
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib/common.sh"
@@ -82,8 +93,9 @@ append_block "$NVIM_DIR/lua/config/keymaps.lua" \
   'require("dotfiles.keymaps")' || _finish 1
 
 # --- 4. Extras do LazyVim -----------------------------------------------------
-# Mesmo arquivo e mesmo formato que o :LazyExtras grava. Só acrescentamos: o que
-# o Omarchy já tiver marcado ali continua marcado.
+# Mesmo arquivo e mesmo formato que o :LazyExtras grava. Fora os de
+# NVIM_EXTRAS_REMOVE, só acrescentamos: o que o Omarchy já tiver marcado ali
+# continua marcado.
 info "Verificando os extras em $NVIM_DIR/lazyvim.json..."
 need_cmd jq "omarchy pkg add jq" || _finish 1
 
@@ -91,13 +103,17 @@ lazyvim_json="$NVIM_DIR/lazyvim.json"
 [[ -f "$lazyvim_json" ]] || echo '{}' >"$lazyvim_json"
 
 wanted="$(printf '%s\n' "${NVIM_EXTRAS[@]}" | jq -R . | jq -s .)"
+unwanted="$(printf '%s\n' "${NVIM_EXTRAS_REMOVE[@]}" | jq -R . | jq -s .)"
 
-if jq -e --argjson want "$wanted" '(.extras // []) as $have
-    | $want - $have | length == 0' "$lazyvim_json" >/dev/null; then
-  skipped "os ${#NVIM_EXTRAS[@]} extras já estão no lazyvim.json"
+if jq -e --argjson want "$wanted" --argjson drop "$unwanted" \
+    '(.extras // []) as $have
+     | ($want - $have | length == 0) and ($drop - ($drop - $have) | length == 0)' \
+    "$lazyvim_json" >/dev/null; then
+  skipped "os extras do lazyvim.json já estão como esperado"
 else
   tmp="$(mktemp)"
-  jq --argjson want "$wanted" '.extras = ((.extras // []) + $want | unique)' \
+  jq --argjson want "$wanted" --argjson drop "$unwanted" \
+    '.extras = (((.extras // []) + $want | unique) - $drop)' \
     "$lazyvim_json" >"$tmp"
   mv "$tmp" "$lazyvim_json"
   ok "extras gravados no lazyvim.json"
