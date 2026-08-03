@@ -1,0 +1,10 @@
+# Este repo versiona configuração, não estado de runtime.
+*.log
+*.sock
+*.bak
+*.bak.*
+*~
+
+# O herdr escreve estado ao lado do próprio config; só o config.toml entra.
+herdr/.config/herdr/.plugins.lock
+herdr/.config/herdr/session.json

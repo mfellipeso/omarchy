@@ -1,0 +1,33 @@
+onboarding = false
+# Keybinds espelh
+[keys]
+prefix = "ctrl+a"                  # tmux: set -g prefix ^A
+
+# Splits
+split_vertical   = "prefix+v"
+split_horizontal = "prefix+h"
+
+# Kill pane sem confirmação (tmux: bind x kill-pane)
+close_pane = "prefix+x"
+
+# Zoom (tmux default: prefix z)
+zoom = "prefix+z"
+
+# Navegação
+focus_pane_left  = "alt+left"
+focus_pane_down  = "alt+down"
+focus_pane_up    = "alt+up"
+focus_pane_right = "alt+right"
+
+# Tabs por número: prefix+1..9 ou Alt+1..9
+switch_tab = ["prefix+1..9", "alt+1..9"]
+
+[theme]
+name = "terminal"
+auto_switch = false
+
+[ui.sound]
+enabled = true
+
+[ui.toast]
+delivery = "off"
