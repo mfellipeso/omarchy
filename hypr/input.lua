@@ -37,6 +37,13 @@ hl.config({
   },
 })
 
+-- Logitech M720 Triathlon. The hardware DPI is fixed, so a per-device
+-- sensitivity boost is how the pointer gets faster; scoped here so the
+-- touchpad/trackpoint keep the default speed. The node name gains a "-1"
+-- suffix depending on how it reconnects, so both spellings get the setting.
+hl.device({ name = "logitech-m720-triathlon-multi-device-mouse", sensitivity = 1 })
+hl.device({ name = "logitech-m720-triathlon-multi-device-mouse-1", sensitivity = 1 })
+
 -- Aula F75, which enumerates under its ODM name. The keyboard exposes several
 -- input nodes and the typing one is not stable between the two, so both get
 -- the layout.
