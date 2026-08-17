@@ -25,6 +25,7 @@ SETUP_SCRIPTS=(
   # 4) Preferências do Omarchy aplicadas por comando (fonte, tema, barra)
   setup-omarchy.sh
   setup-hexa-vpn.sh
+  setup-discord.sh
 )
 # =============================================================================
 
