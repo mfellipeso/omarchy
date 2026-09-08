@@ -41,16 +41,21 @@ need_cmd() {
   fi
 }
 
-# pkg_install pkg1 pkg2 ...
+# pkg_install pkg1 pkg2 ...   — pacotes dos repositórios oficiais
+# aur_install pkg1 pkg2 ...   — pacotes do AUR
 #
-# Sempre por `omarchy pkg add`, que usa --needed e reconfere pacote a pacote no
-# fim — pegando o caso em que o pacman sai 0 sem ter registrado a instalação.
-# Este repo é só para Omarchy, então não há fallback para o pacman direto: sem
-# o comando `omarchy` o script para em vez de instalar por fora do tooling dele.
+# Sempre por `omarchy pkg add` / `omarchy pkg aur add`, que usam --needed e
+# reconferem pacote a pacote no fim — pegando o caso em que o pacman sai 0 sem
+# ter registrado a instalação. Este repo é só para Omarchy, então não há
+# fallback para pacman/yay direto: sem o comando `omarchy` o script para em vez
+# de instalar por fora do tooling dele.
 #
 # O `pacman -Q` do laço é só consulta, para o log dizer o que já estava lá e
 # para não pedir sudo quando não falta nada.
-pkg_install() {
+_pkg_install() {
+  local origin="$1"
+  shift
+
   local to_install=()
   local pkg
   for pkg in "$@"; do
@@ -65,16 +70,33 @@ pkg_install() {
 
   need_cmd omarchy "este repo é só para Omarchy" || return 1
 
-  info "Instalando: ${to_install[*]}"
+  local cmd
+  if [[ "$origin" == "aur" ]]; then
+    cmd=(omarchy pkg aur add)
+    # O `omarchy pkg aur add` chama o yay direto e falha feio quando o AUR está
+    # fora do ar; a checagem antes só troca isso por uma mensagem clara.
+    if ! omarchy pkg aur accessible; then
+      err "AUR inacessível — tente de novo mais tarde: ${to_install[*]}"
+      return 1
+    fi
+    info "Instalando do AUR: ${to_install[*]}"
+  else
+    cmd=(omarchy pkg add)
+    info "Instalando: ${to_install[*]}"
+  fi
+
   # Status checado na mão em vez de contar com o `set -e` de quem chama: dentro
   # de função ele depende de como a chamada é feita, e um `if pkg_install ...`
   # o desliga inteiro.
-  if ! omarchy pkg add "${to_install[@]}"; then
-    err "omarchy pkg add falhou para: ${to_install[*]}"
+  if ! "${cmd[@]}" "${to_install[@]}"; then
+    err "${cmd[*]} falhou para: ${to_install[*]}"
     return 1
   fi
   ok "${#to_install[@]} pacote(s) instalado(s)"
 }
+
+pkg_install() { _pkg_install repo "$@"; }
+aur_install() { _pkg_install aur "$@"; }
 
 # enable_service <unit>
 enable_service() {
