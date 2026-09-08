@@ -18,6 +18,9 @@ set -euo pipefail
 # ttf-ms-fonts é do AUR e não é opcional na prática: sem as fontes da Microsoft
 # o cliente cai num fallback e a interface fica com texto cortado/ilegível.
 #
+# O minimapa vem do TibiaMaps.io no mesmo passo: sem ele o mapa começa preto e
+# só preenche onde o personagem andou.
+#
 # O .desktop e o ícone ficam em ~/.local/share, que tem precedência sobre
 # /usr/share — nada aqui pede sudo além da instalação de pacotes.
 # =============================================================================
@@ -26,6 +29,10 @@ source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib/common.sh"
 
 TIBIA_DIR="${TIBIA_DIR:-$HOME/Games/Tibia}"
 TARBALL_URL="https://static.tibia.com/download/tibia.x64.tar.gz"
+MAPS_URL="https://tibiamaps.io/downloads/minimap-with-markers"
+# Onde o cliente guarda minimapa, hotkeys e action bars. O nome do diretório
+# tem espaço e "GmbH" mesmo — sempre entre aspas.
+TIBIA_DATA="${XDG_DATA_HOME:-$HOME/.local/share}/CipSoft GmbH/Tibia/packages/Tibia"
 LAUNCHER="$HOME/.local/bin/tibia"
 ICON="$HOME/.local/share/icons/hicolor/256x256/apps/tibia.png"
 DESKTOP_ENTRY="$HOME/.local/share/applications/tibia.desktop"
@@ -49,6 +56,7 @@ PACKAGES=(
   libxml2-legacy
   libxkbcommon-x11
   xcb-util-cursor
+  unzip
 )
 
 # --- 1. Dependências ----------------------------------------------------------
@@ -96,7 +104,42 @@ else
   trap - EXIT
 fi
 
-# --- 3. Wrapper em ~/.local/bin ----------------------------------------------
+# --- 3. Minimapa do TibiaMaps.io ---------------------------------------------
+# O minimapa do cliente só preenche o que o personagem já andou. Estes arquivos
+# são o mundo inteiro já explorado, mais os markers (respawns, quests, NPCs) em
+# minimapmarkers.bin. Não é cliente modificado: é o mesmo formato que o próprio
+# cliente grava.
+#
+# Roda sempre, sem checagem de "já instalado": o pack é reeditado a cada mapa
+# novo do jogo, então reexecutar o script é justamente como se atualiza. O preço
+# é que markers que você tenha criado na mão são sobrescritos pelos do pack.
+info "Minimapa do TibiaMaps.io (com markers)..."
+maps_tmp="$(mktemp -d)"
+trap 'rm -rf "$maps_tmp"' EXIT
+
+if ! curl -fL --compressed --progress-bar --retry 3 -o "$maps_tmp/minimap.zip" "$MAPS_URL"; then
+  err "download dos mapas falhou"
+  _finish 1
+fi
+
+# O zip já traz tudo dentro de minimap/, então extrai na raiz de packages/Tibia.
+mkdir -p "$TIBIA_DATA"
+if ! unzip -qo "$maps_tmp/minimap.zip" -d "$TIBIA_DATA"; then
+  err "extração dos mapas falhou"
+  _finish 1
+fi
+ok "$(find "$TIBIA_DATA/minimap" -type f | wc -l) arquivos em $TIBIA_DATA/minimap"
+
+rm -rf "$maps_tmp"
+trap - EXIT
+
+# O cliente mantém o minimapa em memória e regrava a pasta ao fechar, então
+# instalar com ele aberto é jogar fora o que acabou de ser extraído.
+if pgrep -x Tibia &>/dev/null; then
+  skipped "o Tibia está aberto — feche e rode de novo, ou ele regrava o minimapa antigo ao sair"
+fi
+
+# --- 4. Wrapper em ~/.local/bin ----------------------------------------------
 # O qt.conf do cliente traz Prefix=. — os plugins são procurados por caminho
 # relativo, então o launcher precisa rodar com o cwd na pasta de instalação.
 # Daí o wrapper em vez de um symlink para o binário.
@@ -118,7 +161,7 @@ else
   ok "$LAUNCHER gerado"
 fi
 
-# --- 4. Ícone -----------------------------------------------------------------
+# --- 5. Ícone -----------------------------------------------------------------
 # O tibia.ico do tarball é multi-resolução e uma das camadas já é um PNG 256x256;
 # extraí-la dá um ícone que qualquer launcher lê. Sem o ImageMagick, apontamos o
 # .desktop direto para o .ico (o gdk-pixbuf lê, mas nem todo menu usa gdk-pixbuf).
@@ -150,7 +193,7 @@ else
 fi
 [[ -f "$ICON" ]] && icon_key="tibia"
 
-# --- 5. Entry no menu ---------------------------------------------------------
+# --- 6. Entry no menu ---------------------------------------------------------
 info "Entry $DESKTOP_ENTRY..."
 mkdir -p "$(dirname "$DESKTOP_ENTRY")"
 entry_content="$(
@@ -191,5 +234,5 @@ fi
 
 ok "Pronto. Abra pelo menu ou rode 'tibia'."
 echo ""
-info "As configs (hotkeys, action bars, minimapa) ficam em ~/.local/share/CipSoft —"
+info 'As configs (hotkeys, action bars, minimapa) ficam em ~/.local/share/"CipSoft GmbH" —'
 info "são locais, não vêm da conta. Faça backup dessa pasta antes de trocar de máquina."
