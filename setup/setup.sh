@@ -24,6 +24,7 @@ SETUP_SCRIPTS=(
 
   # 4) Preferências do Omarchy aplicadas por comando (fonte, tema, barra)
   setup-omarchy.sh
+  setup-flea.sh
   setup-hexa-vpn.sh
 
   # 5) Jogos
