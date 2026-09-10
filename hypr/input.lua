@@ -21,9 +21,9 @@ hl.config({
     -- pointer feels slow (the old ThinkPad config used 0.45).
     -- sensitivity = 0.45,
 
-    -- Cursor focus detached from keyboard focus: clicking a window is what
-    -- moves keyboard focus to it.
-    follow_mouse = 2,
+    -- Focus follows the cursor: hovering a window gives it keyboard focus,
+    -- no click needed.
+    follow_mouse = 1,
 
     touchpad = {
       -- Use natural (inverse) scrolling.
