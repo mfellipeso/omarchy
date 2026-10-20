@@ -8,7 +8,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # =============================================================================
 SETUP_SCRIPTS=(
   # 1) Sistema base
-  setup-locale.sh
+  setup-language.sh
   setup-ioschedulers.sh
   setup-sysctl.sh
 
@@ -25,7 +25,6 @@ SETUP_SCRIPTS=(
   # 4) Preferências do Omarchy aplicadas por comando (fonte, tema, barra)
   setup-omarchy.sh
   setup-flea.sh
-  setup-hexa-vpn.sh
 
   # 5) Jogos
   setup-tibia.sh
