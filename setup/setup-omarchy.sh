@@ -9,11 +9,6 @@ set -euo pipefail
 # na barra, e o omarchy-font-set passa sed no foot.ini/alacritty.toml). Versionar
 # esses arquivos faria o repo divergir em silêncio, então a fonte da verdade
 # aqui são os comandos — este script apenas os reaplica de forma idempotente.
-#
-# Sobre a fonte: o omarchy-font-set reescreve a linha `font=` do foot.ini
-# cravando size=9. Não é problema — o nosso ~/.dotfiles/foot/local.ini é
-# incluído depois e vence no tamanho, e usa a família "monospace", que o próprio
-# font-set alimenta via ~/.config/fontconfig/fonts.conf.
 # =============================================================================
 
 FONT_FAMILY="CaskaydiaMono Nerd Font"

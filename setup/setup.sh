@@ -9,8 +9,6 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SETUP_SCRIPTS=(
   # 1) Sistema base
   setup-language.sh
-  setup-ioschedulers.sh
-  setup-sysctl.sh
 
   # 2) Containers / VMs
   setup-docker.sh
@@ -19,7 +17,6 @@ SETUP_SCRIPTS=(
 
   # 3) Configs do Omarchy (plantam a linha que aponta para este repo)
   setup-hypr.sh
-  setup-foot.sh
   setup-nvim.sh
 
   # 4) Preferências do Omarchy aplicadas por comando (fonte, tema, barra)
