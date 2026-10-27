@@ -219,8 +219,12 @@ else
   ok "$DESKTOP_ENTRY gerado"
 fi
 
+# A saída é capturada antes do grep: com pipefail, o exit 1 do validador num
+# erro real derrubaria o pipeline inteiro e o `if` cairia no ramo de sucesso.
+# Só erro de verdade (nem warning, nem hint) deve parar o script.
 if command -v desktop-file-validate &>/dev/null; then
-  if desktop-file-validate "$DESKTOP_ENTRY" 2>&1 | grep -v ': warning:' | grep .; then
+  validate_out="$(desktop-file-validate "$DESKTOP_ENTRY" 2>&1 || true)"
+  if grep -vE ': (warning|hint):' <<<"$validate_out" | grep .; then
     err "desktop-file-validate reportou erros"
     _finish 1
   fi
