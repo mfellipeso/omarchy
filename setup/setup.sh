@@ -28,6 +28,9 @@ SETUP_SCRIPTS=(
 
   # 5) Jogos
   setup-tibia.sh
+
+  # 6) Apps (AppImage na home, auto-update por conta do próprio app)
+  setup-artcraft.sh
 )
 # =============================================================================
 
