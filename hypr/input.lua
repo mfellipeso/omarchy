@@ -22,8 +22,10 @@ hl.config({
     -- sensitivity = 0.45,
 
     -- Click to focus. Omarchy defaults to follow_mouse = 1 (hovering a window
-    -- gives it keyboard focus); 0 requires a click.
-    follow_mouse = 0,
+    -- gives it keyboard focus). 2 detaches pointer focus from keyboard focus:
+    -- scroll and hover go to the window under the cursor, keyboard focus only
+    -- moves on click.
+    follow_mouse = 2,
 
     touchpad = {
       -- Use natural (inverse) scrolling.
