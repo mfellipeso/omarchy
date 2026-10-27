@@ -36,7 +36,6 @@ clone it there.
 |-----------|------------|
 | [`hypr/`](hypr/) | Personal Hyprland config in Lua: `env`, `input`, `bindings`, `windows`, `looknfeel`. `init.lua` is the entry point that Omarchy's `hyprland.lua` calls. |
 | [`nvim/`](nvim/) | Binds and preferences on top of the LazyVim shipped by `omarchy-nvim`. Has its [own README](nvim/README.md) explaining what's in and what was left out. |
-| [`herdr/`](herdr/) | herdr's `config.toml` with binds mirroring tmux (prefix `ctrl+a`). Stow layout; not wired into `setup.sh` yet. |
 | [`setup/`](setup/) | Idempotent scripts that set up the machine. `setup.sh` prompts for each one; every script also runs on its own. |
 
 ## Install
@@ -68,8 +67,7 @@ planting) live in [`setup/lib/common.sh`](setup/lib/common.sh).
 
 ## What's left out
 
-Config only, never runtime state. Logs, sockets, `.bak` files and whatever
-herdr writes next to its own config are excluded by the
+Config only, never runtime state. Logs, sockets and `.bak` files are excluded by the
 [`.gitignore`](.gitignore). Neovim's `lazy-lock.json` isn't versioned either:
 it lives in `~/.config/nvim`, which is Omarchy's territory.
 
