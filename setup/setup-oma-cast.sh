@@ -42,15 +42,24 @@ HYPR_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/hypr"
 HYPR_LUA="$HYPR_DIR/hyprland.lua"
 BIND_LUA="$HYPR_DIR/oma-cast.lua"
 REQUIRE_LINE='require("hypr.oma-cast")'
+# Só a linha ativa conta: uma `-- require(...)` comentada não carrega nada.
+REQUIRE_RE='^[[:space:]]*require\("hypr\.oma-cast"\)[[:space:]]*$'
 
 # socat o Omarchy já traz; entra na lista só para o doctor não reclamar numa
 # instalação enxuta. git é o que faz o clone.
 PACKAGES=(git socat)
 
-# plugin_enabled — true se o shell lista o plugin como habilitado
-plugin_enabled() {
-  omarchy plugin list --json 2>/dev/null |
-    jq -e --arg id "$PLUGIN_ID" 'any(.[]; .id == $id and .enabled)' >/dev/null
+# plugin_linked — true se exatamente um symlink do plugin aponta para o clone.
+# O `oma-cast reload` do upstream troca o link simples por um com sufixo
+# .dev-<timestamp> (é assim que ele fura o cache de QML do Quickshell), então
+# o nome válido não é fixo. Mais de um link com o mesmo manifest é sobra de
+# um reload interrompido e também precisa de conserto.
+plugin_linked() {
+  local link n=0
+  for link in "$PLUGIN_LINK" "$PLUGIN_LINK".dev-*; do
+    link_points_to "$link" "$OMA_CAST_DIR/plugin" && n=$((n + 1))
+  done
+  (( n == 1 ))
 }
 
 # plugin_answers — true se o plugin responde ao IPC do shell
@@ -77,6 +86,15 @@ uninstall() {
     removed=$((removed + 1))
   fi
 
+  # Sem o CLI do upstream o plugin ficaria habilitado no shell apontando para
+  # um link que vamos apagar; desligamos nós mesmos.
+  if [[ ! -x "$OMA_CAST" ]] && command -v omarchy &>/dev/null &&
+     omarchy_plugin_is_enabled "$PLUGIN_ID"; then
+    omarchy plugin disable "$PLUGIN_ID" && ok "plugin desabilitado no shell" ||
+      err "omarchy plugin disable falhou — seguindo com a limpeza"
+    removed=$((removed + 1))
+  fi
+
   # Sobras: links que apontem para outro clone, ou de uma versão antiga.
   local p
   for p in "$PLUGIN_LINK" "$PLUGIN_LINK".dev-* "$CLI_LINK"; do
@@ -93,7 +111,7 @@ uninstall() {
     removed=$((removed + 1))
   fi
 
-  if [[ -f "$HYPR_LUA" ]] && grep -qF -- "$REQUIRE_LINE" "$HYPR_LUA"; then
+  if [[ -f "$HYPR_LUA" ]] && grep -qE -- "$REQUIRE_RE" "$HYPR_LUA"; then
     # Tira a linha (só a não comentada) e os brancos que sobram no fim do
     # arquivo, já que o setup hyprland a põe no final precedida de um branco.
     local tmp
@@ -190,30 +208,40 @@ if [[ ! -x "$OMA_CAST" ]]; then
 fi
 
 # --- 3. Plugin no shell + CLI em ~/.local/bin ---------------------------------
-# Três pontas: symlink do plugin, plugin habilitado e respondendo, symlink do
-# CLI. Se todas estão no lugar, pulamos o `install`, que senão reescaneia os
-# plugins e espera o ping — inofensivo, mas lento e barulhento.
+# Três pontas: symlink do plugin (simples ou .dev-*), plugin habilitado e
+# respondendo, symlink do CLI. Se todas estão no lugar, pulamos o `install`,
+# que senão reescaneia os plugins e espera o ping — inofensivo, mas lento e
+# barulhento.
 info "Plugin $PLUGIN_ID no omarchy-shell..."
-if link_points_to "$PLUGIN_LINK" "$OMA_CAST_DIR/plugin" \
-   && link_points_to "$CLI_LINK" "$OMA_CAST" \
-   && plugin_enabled && plugin_answers; then
+if plugin_linked && link_points_to "$CLI_LINK" "$OMA_CAST" \
+   && omarchy_plugin_is_enabled "$PLUGIN_ID" && plugin_answers; then
   skipped "plugin linkado, habilitado e respondendo; CLI em $CLI_LINK"
-  if (( updated )); then
-    # O Quickshell só relê o QML quando o caminho do plugin muda; o reload do
-    # upstream troca o symlink por um com sufixo novo justamente para isso.
-    info "Clone mudou — recarregando o plugin..."
-    "$OMA_CAST" reload || _finish 1
-    ok "plugin recarregado"
-  fi
 else
   if [[ -e "$CLI_LINK" && ! -L "$CLI_LINK" ]]; then
     # O install do upstream pula o link silenciosamente nesse caso; melhor avisar.
     err "$CLI_LINK existe e não é symlink — remova para o CLI ficar no PATH"
     _finish 1
   fi
+  # Links .dev-* de um reload antigo: o install só recria o link simples e
+  # deixaria dois diretórios de plugin com o mesmo id.
+  for stale in "$PLUGIN_LINK".dev-*; do
+    [[ -L "$stale" ]] || continue
+    rm -f -- "$stale"
+    skipped "removido link antigo $stale"
+  done
   # Quem checa omarchy-shell rodando, rescan e habilitação é o próprio install.
   "$OMA_CAST" install || _finish 1
   ok "plugin instalado e habilitado"
+fi
+
+# O Quickshell só relê o QML quando o caminho do plugin muda; o reload do
+# upstream troca o symlink por um com sufixo novo justamente para isso. Um
+# `install` por cima do mesmo caminho não basta, então recarregamos sempre
+# que o clone mudou, em qualquer ramo acima.
+if (( updated )); then
+  info "Clone mudou — recarregando o plugin..."
+  "$OMA_CAST" reload || _finish 1
+  ok "plugin recarregado"
 fi
 
 # --- 4. Atalho Alt+Space -------------------------------------------------------
@@ -227,10 +255,11 @@ if [[ ! -f "$HYPR_LUA" ]]; then
 fi
 if [[ -f "$BIND_LUA" ]]; then
   skipped "$BIND_LUA já existe — mantido como está"
-  if grep -qF -- "$REQUIRE_LINE" "$HYPR_LUA"; then
+  if grep -qE -- "$REQUIRE_RE" "$HYPR_LUA"; then
     skipped "$HYPR_LUA já referencia $REQUIRE_LINE"
   else
-    append_block "$HYPR_LUA" "$REQUIRE_LINE" "$REQUIRE_LINE" || _finish 1
+    printf '\n%s\n' "$REQUIRE_LINE" >>"$HYPR_LUA"
+    ok "$REQUIRE_LINE adicionado em $HYPR_LUA"
     hyprctl reload >/dev/null 2>&1 && ok "Hyprland recarregado" || skipped "hyprctl reload falhou — fora de uma sessão Hyprland?"
   fi
 else

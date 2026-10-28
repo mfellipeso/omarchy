@@ -235,18 +235,51 @@ insert_block_after() {
   ok "$marker inserido em $file após \"$anchor\""
 }
 
-# omarchy_plugin_enable <id> [args...] — habilita um widget da barra
+# omarchy_plugin_known <id>   — o shell já descobriu o plugin (após o rescan)
+# omarchy_plugin_is_enabled <id> — o shell lista o plugin como habilitado
+omarchy_plugin_known() {
+  omarchy plugin list --json 2>/dev/null |
+    jq -e --arg id "$1" 'any(.[]; .id == $id)' >/dev/null
+}
+omarchy_plugin_is_enabled() {
+  omarchy plugin list --json 2>/dev/null |
+    jq -e --arg id "$1" 'any(.[]; .id == $id and .enabled)' >/dev/null
+}
+
+# omarchy_plugin_enable <id> [args...] — habilita um plugin do shell
+#
+# Logo depois de um `omarchy plugin add` o shell ainda está reescaneando e
+# carregando o plugin, e nesse meio tempo o IPC do enable pode responder "not
+# responding" ou "not known" mesmo com o pedido tendo entrado. Então repetimos
+# só nesses casos, conferindo o estado real entre uma tentativa e outra; erro
+# de outro tipo (manifest recusado, etc.) é mostrado e encerra na hora.
 omarchy_plugin_enable() {
   local id="$1"
   shift
   need_cmd omarchy "este script só roda em cima do Omarchy" || return 1
 
-  if omarchy plugin list --json 2>/dev/null |
-     jq -e --arg id "$id" 'any(.[]; .id == $id and .enabled)' >/dev/null; then
-    skipped "$id já habilitado na barra"
+  if omarchy_plugin_is_enabled "$id"; then
+    skipped "$id já habilitado"
     return 0
   fi
 
-  omarchy plugin enable "$id" "$@"
-  ok "$id habilitado na barra"
+  local out attempt
+  for attempt in $(seq 1 20); do
+    if out="$(omarchy plugin enable "$id" "$@" 2>&1)"; then
+      [[ -n "$out" ]] && echo "$out"
+      ok "$id habilitado"
+      return 0
+    fi
+    if [[ "$out" != *"not responding"* && "$out" != *"not known"* && "$out" != *"not ready"* ]]; then
+      err "omarchy plugin enable $id: $out"
+      return 1
+    fi
+    sleep 0.5
+    if omarchy_plugin_is_enabled "$id"; then
+      ok "$id habilitado"
+      return 0
+    fi
+  done
+  err "o shell não respondeu ao enable de $id: $out"
+  return 1
 }

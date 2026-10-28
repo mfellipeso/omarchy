@@ -60,6 +60,7 @@ place.
 | 4 | `setup-omarchy.sh` | Font, theme and bar widgets, by command. |
 | 4 | `setup-flea.sh` | Flea as the default file manager (`flea --default`). |
 | 4 | `setup-oma-cast.sh` | [oma-cast](https://github.com/typecraft-dev/oma-cast) launcher as an `omarchy-shell` plugin, cloned into the home dir and bound to Alt+Space. |
+| 4 | `setup-herdrgotchi.sh` | [Herdrgotchi](https://github.com/jankeesvw/omarchy-herdrgotchi), a Tamagotchi per herdr agent, via `omarchy plugin add`; installs herdr through mise if missing. |
 | 5 | `setup-tibia.sh` | Official Tibia client in the home dir, where its auto-update works. |
 | 6 | `setup-artcraft.sh` | ArtCraft Launcher as an AppImage in the home dir, self-updating. |
 

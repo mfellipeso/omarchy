@@ -23,6 +23,7 @@ SETUP_SCRIPTS=(
   setup-omarchy.sh
   setup-flea.sh
   setup-oma-cast.sh
+  setup-herdrgotchi.sh
 
   # 5) Jogos
   setup-tibia.sh
