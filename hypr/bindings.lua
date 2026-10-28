@@ -35,3 +35,15 @@ o.bind("SUPER + SHIFT + S", "Capture menu", "omarchy-menu toggle capture")
 -- Was: Universal paste. Clipboard manager also stays on SUPER + CTRL + V.
 hl.unbind("SUPER + V")
 o.bind("SUPER + V", "Clipboard manager", "omarchy-shell shell toggle omarchy.clipboard")
+
+-- Was: Omawrite.
+hl.unbind("SUPER + SHIFT + W")
+o.bind("SUPER + SHIFT + W", "WhatsApp", { webapp = "https://web.whatsapp.com/", focus = true })
+
+-- Was: Docker (lazydocker), only bound when lazydocker is installed.
+hl.unbind("SUPER + SHIFT + D")
+o.bind("SUPER + SHIFT + D", "Discord", { webapp = "https://discord.com/app", focus = true })
+
+-- Omarchy binds this too, but only while its preinstalled apps are kept;
+-- after `omarchy remove preinstalls` the key is free, so bind it ourselves.
+o.bind("SUPER + SHIFT + X", "X", { webapp = "https://x.com/", focus = true })
