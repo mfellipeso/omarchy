@@ -59,6 +59,7 @@ place.
 | 3 | `setup-nvim.sh` | Plants the three lines that load `nvim/` across LazyVim's load phases. |
 | 4 | `setup-omarchy.sh` | Font, theme and bar widgets, by command. |
 | 4 | `setup-flea.sh` | Flea as the default file manager (`flea --default`). |
+| 4 | `setup-oma-cast.sh` | [oma-cast](https://github.com/typecraft-dev/oma-cast) launcher as an `omarchy-shell` plugin, cloned into the home dir and bound to Alt+Space. |
 | 5 | `setup-tibia.sh` | Official Tibia client in the home dir, where its auto-update works. |
 | 6 | `setup-artcraft.sh` | ArtCraft Launcher as an AppImage in the home dir, self-updating. |
 
