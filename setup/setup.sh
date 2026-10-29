@@ -22,8 +22,6 @@ SETUP_SCRIPTS=(
   # 4) Preferências do Omarchy aplicadas por comando (fonte, tema, barra)
   setup-omarchy.sh
   setup-flea.sh
-  setup-oma-cast.sh
-  setup-herdrgotchi.sh
 
   # 5) Jogos
   setup-tibia.sh
