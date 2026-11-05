@@ -6,7 +6,7 @@
 
 <p align="center">
   Dotfiles for <a href="https://omarchy.org">Omarchy</a>.<br>
-  No stow, no symlinks: <code>~/.config</code> stays stock and gets one line pointing here.
+  No stow, no symlinked configs: <code>~/.config</code> stays stock and gets one line pointing here.
 </p>
 
 ---
@@ -26,6 +26,8 @@ So the rule here is different:
 - **Preferences that are commands** (font, theme, bar widgets, file manager):
   the source of truth is the command itself (`omarchy font set`,
   `omarchy theme set`, `flea --default`), reapplied idempotently by a script.
+- **Themes** are the one symlink: Omarchy only copies from
+  `~/.config/omarchy/themes`, never writes to it, and supports a link there.
 
 The `~/.dotfiles` path is hardcoded in the scripts and in `hypr/init.lua`;
 clone it there.
@@ -36,6 +38,7 @@ clone it there.
 |-----------|------------|
 | [`hypr/`](hypr/) | Personal Hyprland config in Lua: `env`, `input`, `bindings`, `windows`, `looknfeel`. `init.lua` is the entry point that Omarchy's `hyprland.lua` calls. |
 | [`nvim/`](nvim/) | Binds and preferences on top of the LazyVim shipped by `omarchy-nvim`. Has its [own README](nvim/README.md) explaining what's in and what was left out. |
+| [`themes/`](themes/) | Custom Omarchy themes. `pompeii` is stock Catppuccin's colors with the Pompeii wallpaper and barely rounded corners. |
 | [`setup/`](setup/) | Idempotent scripts that set up the machine. `setup.sh` prompts for each one; every script also runs on its own. |
 
 ## Install

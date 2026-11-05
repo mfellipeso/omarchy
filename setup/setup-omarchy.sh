@@ -13,7 +13,8 @@ set -euo pipefail
 
 FONT_FAMILY="CaskaydiaMono Nerd Font"
 FONT_PACKAGE="ttf-cascadia-mono-nerd"
-THEME="Solitude"
+THEME="Pompeii"
+THEME_DIR="$HOME/.config/omarchy/themes/pompeii"
 BAR_WIDGETS=(
   "omarchy.microphone --section right --before omarchy.audio"
 )
@@ -40,6 +41,21 @@ fi
 
 # --- 2. Tema ------------------------------------------------------------------
 info "Verificando o tema..."
+# O Omarchy só copia os temas do usuário, nunca os reescreve, e aceita de
+# propósito um symlink para uma cópia de trabalho. Por isso, ao contrário dos
+# arquivos de config, aqui o symlink é seguro.
+theme_source="$DOTFILES_DIR/themes/pompeii"
+if [[ "$(readlink "$THEME_DIR" 2>/dev/null || true)" == "$theme_source" ]]; then
+  skipped "$THEME_DIR já aponta para o repo"
+elif [[ -e "$THEME_DIR" || -L "$THEME_DIR" ]]; then
+  err "$THEME_DIR já existe e não aponta para $theme_source"
+  _finish 1
+else
+  mkdir -p "$(dirname "$THEME_DIR")"
+  ln -s "$theme_source" "$THEME_DIR"
+  ok "$THEME_DIR -> $theme_source"
+fi
+
 current_theme="$(omarchy theme current 2>/dev/null || echo "")"
 if [[ "$(slug "$current_theme")" == "$(slug "$THEME")" ]]; then
   skipped "tema já é $THEME"
