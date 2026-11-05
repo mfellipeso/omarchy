@@ -64,6 +64,7 @@ place.
 | 4 | `setup-flea.sh` | Flea as the default file manager (`flea --default`). |
 | 5 | `setup-tibia.sh` | Official Tibia client in the home dir, where its auto-update works. |
 | 6 | `setup-artcraft.sh` | ArtCraft Launcher as an AppImage in the home dir, self-updating. |
+| 6 | `setup-hydra.sh` | Hydra Launcher as an AppImage in the home dir, self-updating. |
 
 Shared helpers (package install, services, Btrfs subvolumes, idempotent line
 planting) live in [`setup/lib/common.sh`](setup/lib/common.sh).

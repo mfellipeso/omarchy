@@ -28,6 +28,7 @@ SETUP_SCRIPTS=(
 
   # 6) Apps (AppImage na home, auto-update por conta do próprio app)
   setup-artcraft.sh
+  setup-hydra.sh
 )
 # =============================================================================
 
