@@ -17,3 +17,15 @@ o.window({ class = "^steam_app_3678970$" }, {
     no_initial_focus = true,
     focus_on_activate = false,
 })
+
+-- GrandChase (Steam app 985810) forces fullscreen on launch; ignore its
+-- fullscreen requests and keep it tiled. Keeps Omarchy's global "maximize"
+-- suppression, since this rule's suppress_event replaces it for this window.
+o.window({ class = "^steam_app_985810$" }, {
+    suppress_event = "fullscreen maximize fullscreenoutput",
+    tile = true,
+    -- Tear instead of waiting for vblank (lower input lag). Only active in
+    -- fullscreen: toggle it with SUPER+F, the suppression above only blocks
+    -- the game's own requests.
+    immediate = true,
+})
