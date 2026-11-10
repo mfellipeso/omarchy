@@ -70,6 +70,7 @@ place.
 | 5 | `setup-tibia.sh` | Official Tibia client in the home dir, where its auto-update works. |
 | 6 | `setup-artcraft.sh` | ArtCraft Launcher as an AppImage in the home dir, self-updating. |
 | 6 | `setup-hydra.sh` | Hydra Launcher as an AppImage in the home dir, self-updating. |
+| 6 | `setup-mdm.sh` | Mister Download Manager as an AppImage in the home dir, self-updating; it registers the browser integration itself on first launch. |
 
 Shared helpers (package install, services, Btrfs subvolumes, idempotent line
 planting) live in [`setup/lib/common.sh`](setup/lib/common.sh).
