@@ -34,9 +34,7 @@ uninstall() {
     sleep 0.5
   done
 
-  if [[ -f "$MIMEAPPS" ]]; then
-    sed -i -E "s/$APP_ID\.desktop;?//g; /=\$/d" "$MIMEAPPS"
-  fi
+  mimeapps_remove "$MIMEAPPS" "$APP_ID\.desktop" || true
   rm -rf -- "$APP_DIR" "$DESKTOP_FILE" "$ICON_DIR"/*/apps/"$APP_ID".* "$CONFIG_DIR" "$CACHE_DIR"
   ok "Hydra removido"
 }

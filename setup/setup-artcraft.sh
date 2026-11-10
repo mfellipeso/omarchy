@@ -185,8 +185,7 @@ uninstall() {
   # vazio. As definições de MIME saem com o banco recompilado.
   # Sem a nossa linha, vale de novo o /usr/share/applications/mimeapps.list,
   # onde o Omarchy deixa os padrões dele (Evince para PDF etc.).
-  if [[ -f "$MIMEAPPS" ]] && grep -q 'ai\.storyteller\.' "$MIMEAPPS"; then
-    sed -i -E 's/ai\.storyteller\.[a-z-]+\.desktop;?//g; /=$/d' "$MIMEAPPS"
+  if mimeapps_remove "$MIMEAPPS" 'ai\.storyteller\.[a-z-]+\.desktop'; then
     ok "padrões de abertura removidos de $MIMEAPPS"
     removed=$((removed + 1))
   fi

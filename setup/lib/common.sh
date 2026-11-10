@@ -284,3 +284,33 @@ omarchy_plugin_enable() {
   err "o shell não respondeu ao enable de $id: $out"
   return 1
 }
+
+# mimeapps_remove <arquivo> <regex-do-desktop-id>
+#   Tira de um mimeapps.list as entradas cujo .desktop casa com a regex (ERE,
+#   aplicada ao id inteiro), e apaga só as linhas que ficaram vazias por causa
+#   disso. Um "chave=" que já estava vazio fica: é o usuário anulando uma
+#   associação de propósito. Retorna 1 se não havia nada a remover.
+mimeapps_remove() {
+  local file="$1" re="$2"
+  [[ -f "$file" ]] || return 1
+  grep -qE -- "(^|[=;])($re)(;|\$)" "$file" || return 1
+  local tmp
+  tmp="$(mktemp)"
+  MIMEAPPS_RE="^($re)$" awk '
+    BEGIN { re = ENVIRON["MIMEAPPS_RE"] }
+    /^[^#[][^=]*=/ {
+      key = substr($0, 1, index($0, "=") - 1)
+      n = split(substr($0, index($0, "=") + 1), ids, ";")
+      out = ""; hit = 0
+      for (i = 1; i <= n; i++) {
+        if (ids[i] == "") continue
+        if (ids[i] ~ re) { hit = 1; continue }
+        out = out ids[i] ";"
+      }
+      if (hit) { if (out == "") next; print key "=" out; next }
+    }
+    { print }
+  ' "$file" >"$tmp"
+  cat "$tmp" >"$file"
+  rm -f "$tmp"
+}
