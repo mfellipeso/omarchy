@@ -157,11 +157,12 @@ btrfs_subvol_nocow() {
   ok "subvolume $path criado com CoW desativado"
 }
 
-# stow_pkg <name> — linka pacote na raiz de $DOTFILES_DIR
+# stow_pkg <name> [args do stow...] — linka pacote na raiz de $DOTFILES_DIR
 stow_pkg() {
   local name="$1"
+  shift
   need_cmd stow "omarchy pkg add stow" || return 1
-  stow --dir="$DOTFILES_DIR" --target="$HOME" "$name"
+  stow --dir="$DOTFILES_DIR" --target="$HOME" "$@" "$name"
 }
 
 # -----------------------------------------------------------------------------

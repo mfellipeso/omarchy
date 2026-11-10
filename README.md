@@ -6,7 +6,7 @@
 
 <p align="center">
   Dotfiles for <a href="https://omarchy.org">Omarchy</a>.<br>
-  No stow, no symlinked configs: <code>~/.config</code> stays stock and gets one line pointing here.
+  <code>~/.config</code> stays stock and gets one line pointing here; Herdr desktop is the one stow package.
 </p>
 
 ---
@@ -26,8 +26,11 @@ So the rule here is different:
 - **Preferences that are commands** (font, theme, bar widgets, file manager):
   the source of truth is the command itself (`omarchy font set`,
   `omarchy theme set`, `flea --default`), reapplied idempotently by a script.
-- **Themes** are the one symlink: Omarchy only copies from
+- **Themes** are a symlink: Omarchy only copies from
   `~/.config/omarchy/themes`, never writes to it, and supports a link there.
+- **Herdr desktop** is the one stow package: Omarchy doesn't own
+  `~/.config/herdr-app`, and Herdr writes through the links. Settings changed
+  in the app (zoom, theme picks) land in the repo, so commit or discard them.
 
 The `~/.dotfiles` path is hardcoded in the scripts and in `hypr/init.lua`;
 clone it there.
@@ -39,6 +42,7 @@ clone it there.
 | [`hypr/`](hypr/) | Personal Hyprland config in Lua: `env`, `input`, `bindings`, `windows`, `looknfeel`. `init.lua` is the entry point that Omarchy's `hyprland.lua` calls. |
 | [`nvim/`](nvim/) | Binds and preferences on top of the LazyVim shipped by `omarchy-nvim`. Has its [own README](nvim/README.md) explaining what's in and what was left out. |
 | [`themes/`](themes/) | Custom Omarchy themes. `pompeii` is stock Catppuccin's colors with the Pompeii wallpaper and barely rounded corners. |
+| [`herdr-app/`](herdr-app/) | Herdr desktop, the one **stow** package (`stow --no-folding`): `settings.json` and `keys.json` (Herdr's defaults plus Omarchy's direct herdr/tmux keys; `alt-hjkl` left to programs such as LazyVim), plus the `herdr-app.json.tpl` template and the `theme-set` hook that publish the current Omarchy palette as `themes/omarchy.json`. Port of omacom/omarchy PR 17118, until the installed Omarchy ships it. Herdr writes through the links and recreates them instantly if removed, so `setup-herdr-app.sh` swaps them in by atomic rename (backing up the originals as `.bak`), and only after the theme exists. |
 | [`setup/`](setup/) | Idempotent scripts that set up the machine. `setup.sh` prompts for each one; every script also runs on its own. |
 
 ## Install
@@ -62,6 +66,7 @@ place.
 | 3 | `setup-nvim.sh` | Plants the three lines that load `nvim/` across LazyVim's load phases. |
 | 4 | `setup-omarchy.sh` | Font, theme and bar widgets, by command. |
 | 4 | `setup-flea.sh` | Flea as the default file manager (`flea --default`). |
+| 4 | `setup-herdr-app.sh` | Stows `herdr-app/` and publishes the Omarchy palette as Herdr's `omarchy` theme. |
 | 5 | `setup-tibia.sh` | Official Tibia client in the home dir, where its auto-update works. |
 | 6 | `setup-artcraft.sh` | ArtCraft Launcher as an AppImage in the home dir, self-updating. |
 | 6 | `setup-hydra.sh` | Hydra Launcher as an AppImage in the home dir, self-updating. |
