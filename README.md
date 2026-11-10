@@ -71,6 +71,7 @@ place.
 | 6 | `setup-artcraft.sh` | ArtCraft Launcher as an AppImage in the home dir, self-updating. |
 | 6 | `setup-hydra.sh` | Hydra Launcher as an AppImage in the home dir, self-updating. |
 | 6 | `setup-mdm.sh` | Mister Download Manager as an AppImage in the home dir, self-updating; it registers the browser integration itself on first launch. |
+| 6 | `setup-winbox.sh` | MikroTik WinBox 4 straight from mikrotik.com, in the home dir; rerunning updates it (WinBox doesn't self-update). |
 
 Shared helpers (package install, services, Btrfs subvolumes, idempotent line
 planting) live in [`setup/lib/common.sh`](setup/lib/common.sh).

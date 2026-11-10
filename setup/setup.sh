@@ -27,10 +27,11 @@ SETUP_SCRIPTS=(
   # 5) Jogos
   setup-tibia.sh
 
-  # 6) Apps (AppImage na home, auto-update por conta do próprio app)
+  # 6) Apps na home (AppImage com auto-update próprio; WinBox atualiza rodando de novo)
   setup-artcraft.sh
   setup-hydra.sh
   setup-mdm.sh
+  setup-winbox.sh
 )
 # =============================================================================
 

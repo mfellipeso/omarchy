@@ -41,6 +41,30 @@ need_cmd() {
   fi
 }
 
+# kill_and_wait <função-que-lista-os-pids> <nome>
+#
+# Fecha um app antes de apagar os dados dele: SIGTERM, até 10 s para ele sair
+# (e gravar o que tiver de gravar), depois SIGKILL. Recebe uma função em vez
+# dos PIDs para reconferir a cada volta, já que um app pode abrir outro
+# processo enquanto fecha. Retorna 1 se algo sobreviveu até ao SIGKILL — aí
+# quem chama não deve apagar nada, porque o processo regravaria ao sair.
+kill_and_wait() {
+  local list="$1" name="$2" pids sig
+  for sig in TERM KILL; do
+    pids="$("$list")" || true
+    [[ -z "$pids" ]] && return 0
+    [[ "$sig" == KILL ]] && info "$name não fechou em 10 s — forçando"
+    # shellcheck disable=SC2086
+    kill -s "$sig" $pids 2>/dev/null || true
+    for _ in $(seq 20); do
+      [[ -z "$("$list" || true)" ]] && return 0
+      sleep 0.5
+    done
+  done
+  err "$name continua rodando (PIDs: $("$list" | tr '\n' ' '))"
+  return 1
+}
+
 # pkg_install pkg1 pkg2 ...   — pacotes dos repositórios oficiais
 # aur_install pkg1 pkg2 ...   — pacotes do AUR
 #

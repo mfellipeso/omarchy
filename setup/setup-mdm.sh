@@ -54,16 +54,7 @@ mdm_pids() {
 uninstall() {
   # Fechar antes: ao sair o MDM regravaria a lista e as settings, e o host
   # aberto por um navegador seguiria rodando do diretório apagado.
-  local pids
-  pids="$(mdm_pids)"
-  if [[ -n "$pids" ]]; then
-    # shellcheck disable=SC2086
-    kill $pids 2>/dev/null || true
-    for _ in $(seq 20); do
-      [[ -z "$(mdm_pids)" ]] && break
-      sleep 0.5
-    done
-  fi
+  kill_and_wait mdm_pids MDM || return 1
 
   # Manifestos de native messaging: o próprio nmhost sabe onde os escreveu. O
   # find (o mesmo da documentação do MDM) pega o que ele não cobre, como os
@@ -115,7 +106,7 @@ entry_ok() {
 
 case "${1:-}" in
   --uninstall)
-    uninstall
+    uninstall || _finish 1
     _finish 0
     ;;
   "") ;;
