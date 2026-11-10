@@ -19,7 +19,7 @@ hl.config({
   },
 
   -- Barely rounded. The omarchy-shell mirrors this value on its own panels.
-  decoration = {
-    rounding = 3,
-  },
+  -- decoration = {
+  --   rounding = 3,
+  -- },
 })
