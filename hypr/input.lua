@@ -51,3 +51,9 @@ hl.device({ name = "logitech-m720-triathlon-multi-device-mouse-1", sensitivity =
 -- the layout.
 hl.device({ name = "by-tech-gaming-keyboard", kb_layout = "us", kb_variant = "intl" })
 hl.device({ name = "by-tech-gaming-keyboard-1", kb_layout = "us", kb_variant = "intl" })
+
+-- Same Aula F75 over its 2.4G dongle (USB 3554:fa09), which enumerates as
+-- "Compx 2.4G Wireless Receiver". It also exposes several keyboard nodes, so
+-- the ones that can carry typing get the layout.
+hl.device({ name = "compx-2.4g-wireless-receiver-keyboard", kb_layout = "us", kb_variant = "intl" })
+hl.device({ name = "compx-2.4g-wireless-receiver", kb_layout = "us", kb_variant = "intl" })
