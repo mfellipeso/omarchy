@@ -1,0 +1,22 @@
+#!/bin/bash
+# Publishes the palette Omarchy rendered from themed/misterdownloadmanager.toml.tpl
+# as Mister Download Manager's "Omarchy" theme. MDM picks up the file within ~2s,
+# but only shows new colors after reselecting View -> Theme -> Omarchy.
+# Skips until MDM has run once and created its data dir.
+source "$(dirname "$(readlink -f "$0")")/../../../../../setup/lib/theme-hook.sh"
+
+home="${XDG_DATA_HOME:-$HOME/.local/share}/misterdownloadmanager"
+
+# Every seed the template sets must be present and resolved to #rrggbb(aa): an
+# empty or truncated render has to fail too, not just a bad line.
+valid_mdm_theme() {
+  local seed
+  grep -q '{{' "$1" && return 1
+  for seed in background surface header text accent selection error warning success; do
+    grep -qE "^$seed = \"#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?\"$" "$1" || return 1
+  done
+}
+
+publish_palette MDM "$home" \
+  "$HOME/.local/state/omarchy/current/theme/misterdownloadmanager.toml" \
+  "$home/themes/omarchy.toml" valid_mdm_theme

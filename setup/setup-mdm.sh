@@ -15,8 +15,16 @@ set -euo pipefail
 # cada abertura; a extensão vem da Chrome Web Store / AMO ou pela janela que o
 # próprio MDM oferece. Navegadores Flatpak não alcançam o MDM.
 #
-# `setup-mdm.sh --uninstall` desfaz tudo, inclusive a lista e as settings em
-# ~/.local/share/misterdownloadmanager e os manifestos de native messaging.
+# Tema: o pacote mdm/ é stowado em ~ (--no-folding, só arquivos viram link):
+#   .config/omarchy/themed/misterdownloadmanager.toml.tpl  paleta -> MDM
+#   .config/omarchy/hooks/theme-set.d/30-mdm               publica themes/omarchy.toml
+# A cada `omarchy theme set` o hook republica o tema; o MDM só mostra as cores
+# novas ao reselecionar View → Theme → Omarchy. A escolha do tema e o "Always
+# dark" ficam no downloads.json do MDM (junto da lista), que não é versionado.
+#
+# `setup-mdm.sh --uninstall` desfaz tudo: o stow do tema, a lista e as
+# settings em ~/.local/share/misterdownloadmanager e os manifestos de native
+# messaging.
 # Arquivos baixados ficam onde estão.
 # =============================================================================
 
@@ -33,6 +41,9 @@ DESKTOP_FILE="$DATA_HOME/applications/$APP_ID.desktop"
 ICON_DIR="$DATA_HOME/icons/hicolor"
 CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/$APP_ID"
 MIMEAPPS="${XDG_CONFIG_HOME:-$HOME/.config}/mimeapps.list"
+PKG="mdm"
+PALETTE="$HOME/.local/state/omarchy/current/theme/misterdownloadmanager.toml"
+HOOK="$HOME/.config/omarchy/hooks/theme-set.d/30-mdm"
 
 # PIDs do MDM aberto a partir do NOSSO AppImage. O runtime type 2 se divide em
 # dois: o filho fica servindo o FUSE com a linha de comando "$APPIMAGE ..." e o
@@ -66,6 +77,7 @@ uninstall() {
     -name com.misterdownloadmanager.host.json -delete 2>/dev/null || true
 
   mimeapps_remove "$MIMEAPPS" "$APP_ID\.desktop" || true
+  stow_pkg "$PKG" --no-folding -D || true
   rm -rf -- "$APP_DIR" "$DATA_DIR" "$CONFIG_DIR" "$DESKTOP_FILE" \
     "$ICON_DIR"/*/apps/"$APP_ID".*
   ok "MDM removido"
@@ -97,6 +109,30 @@ install_entry() {
     return 1
   fi
   mv -f "$DESKTOP_FILE.tmp" "$DESKTOP_FILE"
+}
+
+# publish_theme — linka template e hook e publica o tema "Omarchy" no MDM.
+# Só publica depois que o MDM abriu uma vez: o diretório de dados é dele, e
+# criá-lo antes poderia atrapalhar a primeira execução. Até lá o hook também
+# pula, e o tema chega rodando este script de novo ou trocando de tema.
+# Tema é cosmético: falhar aqui só avisa, não derruba o setup do app.
+publish_theme() {
+  info "Tema Omarchy do MDM..."
+  if ! stow_pkg "$PKG" --no-folding; then
+    skipped "template e hook do tema não foram linkados"
+    return 0
+  fi
+  ok "template e hook linkados"
+
+  if [[ ! -d $DATA_DIR ]]; then
+    skipped "abra o MDM uma vez e rode este script de novo para publicar o tema"
+    return 0
+  fi
+  if ! publish_omarchy_theme MDM "$HOOK" "$PALETTE" "$DATA_DIR/themes/omarchy.toml"; then
+    skipped "MDM instalado sem o tema Omarchy"
+    return 0
+  fi
+  info "No MDM: View → Theme → Omarchy, e View → Always dark se o tema for escuro"
 }
 
 entry_ok() {
@@ -143,6 +179,7 @@ if [[ -x "$APPIMAGE" && "$(sha256sum "$APPIMAGE" | cut -d' ' -f1)" == "$sha" ]];
     install_entry "$APPIMAGE" || _finish 1
     ok "MDM $version já instalado — entry e ícone refeitos"
   fi
+  publish_theme
   _finish 0
 fi
 
@@ -167,3 +204,4 @@ install_entry "$download" || _finish 1
 mv -f "$download" "$APPIMAGE"
 ok "MDM $version instalado em $APPIMAGE"
 info "Abra o MDM uma vez para ele registrar a integração com os navegadores"
+publish_theme

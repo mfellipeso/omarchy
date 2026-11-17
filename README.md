@@ -6,7 +6,7 @@
 
 <p align="center">
   Dotfiles for <a href="https://omarchy.org">Omarchy</a>.<br>
-  <code>~/.config</code> stays stock and gets one line pointing here; Herdr desktop is the one stow package.
+  <code>~/.config</code> stays stock and gets one line pointing here; Herdr desktop and MDM's theme are the stow packages.
 </p>
 
 ---
@@ -28,9 +28,11 @@ So the rule here is different:
   `omarchy theme set`, `flea --default`), reapplied idempotently by a script.
 - **Themes** are a symlink: Omarchy only copies from
   `~/.config/omarchy/themes`, never writes to it, and supports a link there.
-- **Herdr desktop** is the one stow package: Omarchy doesn't own
+- **Herdr desktop** and **MDM's theme** are stow packages: Omarchy doesn't own
   `~/.config/herdr-app`, and Herdr writes through the links. Settings changed
   in the app (zoom, theme picks) land in the repo, so commit or discard them.
+  MDM's package is only a template and a hook under `~/.config/omarchy`, two
+  paths Omarchy reads but never writes.
 
 The `~/.dotfiles` path is hardcoded in the scripts and in `hypr/init.lua`;
 clone it there.
@@ -42,7 +44,8 @@ clone it there.
 | [`hypr/`](hypr/) | Personal Hyprland config in Lua: `env`, `input`, `bindings`, `windows`, `looknfeel`. `init.lua` is the entry point that Omarchy's `hyprland.lua` calls. |
 | [`nvim/`](nvim/) | Binds and preferences on top of the LazyVim shipped by `omarchy-nvim`. Has its [own README](nvim/README.md) explaining what's in and what was left out. |
 | [`themes/`](themes/) | Custom Omarchy themes. `pompeii` is stock Catppuccin's colors with the Pompeii wallpaper and barely rounded corners. |
-| [`herdr-app/`](herdr-app/) | Herdr desktop, the one **stow** package (`stow --no-folding`): `settings.json` and `keys.json` (Herdr's defaults plus Omarchy's direct herdr/tmux keys; `alt-hjkl` left to programs such as LazyVim), plus the `herdr-app.json.tpl` template and the `theme-set` hook that publish the current Omarchy palette as `themes/omarchy.json`. Port of omacom/omarchy PR 17118, until the installed Omarchy ships it. Herdr writes through the links and recreates them instantly if removed, so `setup-herdr-app.sh` swaps them in by atomic rename (backing up the originals as `.bak`), and only after the theme exists. |
+| [`herdr-app/`](herdr-app/) | Herdr desktop, a **stow** package (`stow --no-folding`): `settings.json` and `keys.json` (Herdr's defaults plus Omarchy's direct herdr/tmux keys; `alt-hjkl` left to programs such as LazyVim), plus the `herdr-app.json.tpl` template and the `theme-set` hook that publish the current Omarchy palette as `themes/omarchy.json`. Port of omacom/omarchy PR 17118, until the installed Omarchy ships it. Herdr writes through the links and recreates them instantly if removed, so `setup-herdr-app.sh` swaps them in by atomic rename (backing up the originals as `.bak`), and only after the theme exists. |
+| [`mdm/`](mdm/) | Stow package (`stow --no-folding`) with the `misterdownloadmanager.toml.tpl` template and the `theme-set` hook that publish the current Omarchy palette as Mister Download Manager's `Omarchy` theme (`themes/omarchy.toml`). Omarchy only reads these two paths, so plain stow links are safe. The theme is only published once MDM has run and created its own data dir. Picking the theme and "Always dark" live in MDM's `downloads.json` next to the download list, so they stay out of the repo: one click per machine. |
 | [`setup/`](setup/) | Idempotent scripts that set up the machine. `setup.sh` prompts for each one; every script also runs on its own. |
 
 ## Install
@@ -70,11 +73,14 @@ place.
 | 5 | `setup-tibia.sh` | Official Tibia client in the home dir, where its auto-update works. |
 | 6 | `setup-artcraft.sh` | ArtCraft Launcher as an AppImage in the home dir, self-updating. |
 | 6 | `setup-hydra.sh` | Hydra Launcher as an AppImage in the home dir, self-updating. |
-| 6 | `setup-mdm.sh` | Mister Download Manager as an AppImage in the home dir, self-updating; it registers the browser integration itself on first launch. |
+| 6 | `setup-mdm.sh` | Mister Download Manager as an AppImage in the home dir, self-updating; it registers the browser integration itself on first launch. Also stows `mdm/` and publishes the Omarchy palette as MDM's `Omarchy` theme. |
 | 6 | `setup-winbox.sh` | MikroTik WinBox 4 straight from mikrotik.com, in the home dir; rerunning updates it (WinBox doesn't self-update). |
 
 Shared helpers (package install, services, Btrfs subvolumes, idempotent line
-planting) live in [`setup/lib/common.sh`](setup/lib/common.sh).
+planting, publishing the Omarchy palette into an app) live in
+[`setup/lib/common.sh`](setup/lib/common.sh). The `theme-set` hooks of
+`herdr-app/` and `mdm/` share [`setup/lib/theme-hook.sh`](setup/lib/theme-hook.sh),
+which validates the rendered palette and publishes it atomically.
 
 ## What's left out
 

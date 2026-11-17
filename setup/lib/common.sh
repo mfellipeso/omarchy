@@ -338,3 +338,35 @@ mimeapps_remove() {
   cat "$tmp" >"$file"
   rm -f "$tmp"
 }
+
+# -----------------------------------------------------------------------------
+# Paleta do Omarchy publicada num app (herdr-app, mdm)
+# -----------------------------------------------------------------------------
+
+# publish_omarchy_theme <app> <hook> <paleta> <publicado>
+#   Publica pelo hook theme-set do app a <paleta> que o Omarchy renderiza do
+#   template e confere o resultado. Sem a paleta (template recém-linkado),
+#   `omarchy theme refresh` renderiza os templates e já roda os hooks (ele
+#   espera o lote terminar); com ela, basta o hook. A conferência compara o
+#   publicado com a paleta, então um tema velho de uma execução anterior não
+#   passa por sucesso.
+publish_omarchy_theme() {
+  local app="$1" hook="$2" palette="$3" published="$4"
+
+  if [[ -f $palette ]]; then
+    bash "$hook"
+  else
+    omarchy theme refresh >/dev/null
+  fi
+
+  if cmp -s "$palette" "$published"; then
+    ok "tema omarchy do $app publicado em $published"
+    return 0
+  fi
+  if [[ ! -f $palette ]]; then
+    err "o tema atual não gerou $palette (ele tem colors.toml?)"
+  else
+    err "$palette foi rejeitado pelo hook do $app (cores inválidas ou não resolvidas)"
+  fi
+  return 1
+}

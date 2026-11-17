@@ -52,25 +52,12 @@ stow_pkg "$PKG" --no-folding --ignore='(settings|keys)\.json' || _finish 1
 ok "template e hook linkados"
 
 # --- 2. Publicar o tema omarchy -------------------------------------------------
-# Só gera a paleta (refresh completo do tema) se ela ainda não existir; senão
-# basta o hook copiá-la para o Herdr.
 info "Publicando o tema omarchy do Herdr..."
-if [[ ! -f $PALETTE ]]; then
-  omarchy theme refresh >/dev/null
-fi
-bash "$HOOK"
-
-if [[ ! -f $HERDR_HOME/themes/omarchy.json ]]; then
-  if [[ ! -f $PALETTE ]]; then
-    err "o tema atual não gerou $PALETTE (ele tem colors.toml?)"
-  else
-    err "$PALETTE foi rejeitado pelo hook (cores inválidas ou não resolvidas)"
-  fi
+if ! publish_omarchy_theme Herdr "$HOOK" "$PALETTE" "$HERDR_HOME/themes/omarchy.json"; then
   err "settings.json não foi linkado: ele seleciona um tema que não existe"
   link_atomic keys.json
   _finish 1
 fi
-ok "themes/omarchy.json publicado"
 
 # --- 3. settings/keys.json ------------------------------------------------------
 info "Linkando settings.json e keys.json..."
