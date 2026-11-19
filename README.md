@@ -69,7 +69,7 @@ place.
 | 3 | `setup-nvim.sh` | Plants the three lines that load `nvim/` across LazyVim's load phases. |
 | 4 | `setup-omarchy.sh` | Font, theme and bar widgets, by command. |
 | 4 | `setup-flea.sh` | Flea as the default file manager (`flea --default`). |
-| 4 | `setup-herdr-app.sh` | Stows `herdr-app/` and publishes the Omarchy palette as Herdr's `omarchy` theme. |
+| 4 | `setup-herdr-app.sh` | Installs Herdr with its official installer when missing, stows `herdr-app/` and publishes the Omarchy palette as Herdr's `omarchy` theme. |
 | 5 | `setup-tibia.sh` | Official Tibia client in the home dir, where its auto-update works. |
 | 6 | `setup-artcraft.sh` | ArtCraft Launcher as an AppImage in the home dir, self-updating. |
 | 6 | `setup-hydra.sh` | Hydra Launcher as an AppImage in the home dir, self-updating. |

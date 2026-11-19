@@ -2,7 +2,11 @@
 set -euo pipefail
 
 # =============================================================================
-# HERDR-APP — config e tema do Herdr desktop via stow
+# HERDR-APP — Herdr desktop, com config e tema via stow
+#
+# Sem o app em ~/.local/share/herdr-app, roda o instalador oficial
+# (releases.herdr.dev/app/install.sh): app, `herdr-app` em ~/.local/bin, entry,
+# ícone e o herdr-core se ainda não houver um. Já instalado, não reinstala.
 #
 # O pacote herdr-app/ é stowado em ~ (--no-folding, só arquivos viram link):
 #   .config/herdr-app/{settings,keys}.json         config do Herdr
@@ -22,6 +26,8 @@ set -euo pipefail
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib/common.sh"
 
 PKG="herdr-app"
+INSTALL_URL="https://releases.herdr.dev/app/install.sh"
+APP_BIN="${XDG_DATA_HOME:-$HOME/.local/share}/herdr-app/herdr-app"
 HERDR_HOME="${HERDR_APP_HOME:-${XDG_CONFIG_HOME:-$HOME/.config}/herdr-app}"
 PALETTE="$HOME/.local/state/omarchy/current/theme/herdr-app.json"
 HOOK="$HOME/.config/omarchy/hooks/theme-set.d/20-herdr-app"
@@ -45,13 +51,33 @@ link_atomic() {
   ok "$name -> repo"
 }
 
-# --- 1. Template e hook do tema -------------------------------------------------
+# --- 1. Herdr -------------------------------------------------------------------
+# O instalador é baixado inteiro antes de rodar: com `curl | sh`, uma conexão
+# cortada no meio executaria um script truncado.
+info "Verificando o Herdr..."
+if [[ -x $APP_BIN ]]; then
+  skipped "Herdr já instalado em $APP_BIN"
+else
+  ensure_cmd curl || _finish 1
+  ensure_cmd tar || _finish 1
+  if ! installer="$(curl -fsSL --retry 3 "$INSTALL_URL")"; then
+    err "não foi possível baixar $INSTALL_URL"
+    _finish 1
+  fi
+  if ! sh -c "$installer"; then
+    err "o instalador do Herdr falhou"
+    _finish 1
+  fi
+  ok "Herdr instalado"
+fi
+
+# --- 2. Template e hook do tema -------------------------------------------------
 info "Stow do pacote $PKG (template e hook)..."
 mkdir -p "$HERDR_HOME"
 stow_pkg "$PKG" --no-folding --ignore='(settings|keys)\.json' || _finish 1
 ok "template e hook linkados"
 
-# --- 2. Publicar o tema omarchy -------------------------------------------------
+# --- 3. Publicar o tema omarchy -------------------------------------------------
 info "Publicando o tema omarchy do Herdr..."
 if ! publish_omarchy_theme Herdr "$HOOK" "$PALETTE" "$HERDR_HOME/themes/omarchy.json"; then
   err "settings.json não foi linkado: ele seleciona um tema que não existe"
@@ -59,7 +85,7 @@ if ! publish_omarchy_theme Herdr "$HOOK" "$PALETTE" "$HERDR_HOME/themes/omarchy.
   _finish 1
 fi
 
-# --- 3. settings/keys.json ------------------------------------------------------
+# --- 4. settings/keys.json ------------------------------------------------------
 info "Linkando settings.json e keys.json..."
 link_atomic keys.json
 link_atomic settings.json
