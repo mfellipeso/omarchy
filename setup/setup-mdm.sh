@@ -155,7 +155,7 @@ esac
 # fuse3: o runtime do AppImage monta o squashfs a cada abertura.
 # libxkbcommon-x11: o MDM roda por XWayland e o AppImage não traz essa lib
 # (sem ela ele cai para Wayland nativo, com menus abrindo no meio da tela).
-pkg_install fuse3 libxkbcommon-x11 || _finish 1
+pkg_install fuse3 curl libxkbcommon-x11 || _finish 1
 
 # O nome do arquivo traz a versão; a linha certa é a única que termina em
 # -linux-x86_64.AppImage (a do .zsync termina em .zsync). O tr tira um CR

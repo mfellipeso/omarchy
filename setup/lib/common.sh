@@ -181,11 +181,20 @@ btrfs_subvol_nocow() {
   ok "subvolume $path criado com CoW desativado"
 }
 
+# ensure_cmd <cmd> [pacote] — instala <pacote> (padrão: o próprio <cmd>) se o
+# comando não existir, para o script resolver a dependência em vez de parar.
+ensure_cmd() {
+  local cmd="$1" pkg="${2:-$1}"
+  command -v "$cmd" &>/dev/null && return 0
+  pkg_install "$pkg" || return 1
+  need_cmd "$cmd" "o pacote $pkg não trouxe o comando $cmd" || return 1
+}
+
 # stow_pkg <name> [args do stow...] — linka pacote na raiz de $DOTFILES_DIR
 stow_pkg() {
   local name="$1"
   shift
-  need_cmd stow "omarchy pkg add stow" || return 1
+  ensure_cmd stow || return 1
   stow --dir="$DOTFILES_DIR" --target="$HOME" "$@" "$name"
 }
 

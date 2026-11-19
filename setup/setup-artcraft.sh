@@ -264,7 +264,7 @@ esac
 # O runtime do AppImage monta o squashfs por fusermount3 a cada abertura.
 info "Dependências do AppImage..."
 pkg_install fuse3 || _finish 1
-need_cmd curl || _finish 1
+ensure_cmd curl || _finish 1
 
 # --- 2. Baixar a release mais recente ----------------------------------------
 # Uma vez instalado, o Launcher se atualiza sozinho (e o AppImage novo entra
@@ -410,7 +410,7 @@ fi
 # Launcher regrava o entry ao atualizar o app, e a rodada seguinte conserta de
 # novo; até lá só o xdg-open fica de fora.
 info "Padrões de abertura..."
-need_cmd xdg-mime "omarchy pkg add xdg-utils" || _finish 1
+ensure_cmd xdg-mime xdg-utils || _finish 1
 
 # mime_default_is <mime> <entry> — o entry já é o padrão desse tipo?
 # Lê o mimeapps.list direto: o `xdg-mime query default` valida o Exec do entry

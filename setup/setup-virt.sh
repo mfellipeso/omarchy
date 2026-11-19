@@ -59,7 +59,7 @@ else
 fi
 
 # --- 7. UFW: permitir roteamento da subnet do libvirt ------------------------
-need_cmd ufw "rode setup-ufw.sh primeiro" || _finish 1
+ensure_cmd ufw || _finish 1
 
 info "Verificando regra UFW para rede virtual..."
 if sudo ufw status verbose 2>/dev/null | grep -q "192.168.122.0/24"; then

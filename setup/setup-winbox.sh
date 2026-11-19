@@ -98,7 +98,7 @@ case "${1:-}" in
 esac
 
 # Bibliotecas que o binário linka e que não vêm com o Qt embutido nele.
-pkg_install unzip libxkbcommon-x11 xcb-util xcb-util-image xcb-util-keysyms \
+pkg_install unzip curl libxkbcommon-x11 xcb-util xcb-util-image xcb-util-keysyms \
   xcb-util-renderutil xcb-util-wm libglvnd || _finish 1
 
 # O que está instalado: versão do stamp, e se o binário ainda bate com o hash

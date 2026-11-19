@@ -71,7 +71,7 @@ aur_install ttf-ms-fonts || _finish 1
 if [[ -x "$TIBIA_DIR/Tibia" && "${TIBIA_FORCE:-0}" != "1" ]]; then
   skipped "cliente já instalado em $TIBIA_DIR (TIBIA_FORCE=1 reinstala)"
 else
-  need_cmd curl || _finish 1
+  ensure_cmd curl || _finish 1
 
   tmp="$(mktemp -d)"
   trap 'rm -rf "$tmp"' EXIT

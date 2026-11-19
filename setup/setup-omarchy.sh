@@ -69,7 +69,7 @@ fi
 # `omarchy bar move` só reordena widgets já presentes; quem adiciona é o
 # `omarchy plugin enable`. O helper confere o estado antes de chamar.
 info "Verificando os widgets da barra..."
-need_cmd jq "omarchy pkg add jq" || _finish 1
+ensure_cmd jq || _finish 1
 for widget in "${BAR_WIDGETS[@]}"; do
   # shellcheck disable=SC2086 # a placement vai como argumentos separados
   omarchy_plugin_enable $widget

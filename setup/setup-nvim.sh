@@ -67,7 +67,7 @@ append_block "$NVIM_DIR/lua/config/keymaps.lua" \
   'require("dotfiles.keymaps")' || _finish 1
 
 # --- 4. Sincronizar os plugins ------------------------------------------------
-need_cmd nvim "omarchy pkg add neovim" || _finish 1
+ensure_cmd nvim neovim || _finish 1
 
 info "Sincronizando os plugins (lazy sync)..."
 # `Lazy! sync` roda sem esperar UI; o wait faz o headless segurar até terminar.

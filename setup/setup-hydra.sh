@@ -55,7 +55,7 @@ esac
 sha512_b64() { openssl dgst -sha512 -binary "$1" | base64 -w0; }
 
 # O runtime do AppImage monta o squashfs por fusermount3 a cada abertura.
-pkg_install fuse3 || _finish 1
+pkg_install fuse3 curl || _finish 1
 
 # Só as chaves da raiz: as de `files:` têm recuo e se repetem para .deb e .rpm.
 manifest="$(curl -fsSL --retry 3 "$RELEASE_URL/latest-linux.yml")"
