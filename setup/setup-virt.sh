@@ -7,7 +7,7 @@ set -euo pipefail
 
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib/common.sh"
 
-PACKAGES=(qemu-full virt-manager swtpm)
+PACKAGES=(qemu-full virt-manager swtpm dnsmasq virt-viewer)
 VM_DIR="/var/lib/libvirt"
 NETWORK_CONF="/etc/libvirt/network.conf"
 FIREWALL_ENTRY='firewall_backend = "iptables"'
