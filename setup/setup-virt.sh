@@ -7,7 +7,7 @@ set -euo pipefail
 
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib/common.sh"
 
-PACKAGES=(qemu-full virt-manager swtpm dnsmasq virt-viewer)
+PACKAGES=(qemu-desktop virt-manager swtpm dnsmasq dmidecode)
 VM_DIR="/var/lib/libvirt"
 NETWORK_CONF="/etc/libvirt/network.conf"
 FIREWALL_ENTRY='firewall_backend = "iptables"'
@@ -43,18 +43,22 @@ enable_service libvirtd.service
 enable_service libvirtd.socket
 
 # --- 6. Rede default do libvirt com autostart ---------------------------------
+# LC_ALL=C: o virsh traduz a saída, e em pt-BR os greps abaixo nunca casariam.
+# Saída em variável, e não em pipe: o grep -q sai no primeiro match e, com
+# pipefail, o SIGPIPE no virsh faz uma rede ativa parecer inativa.
 info "Verificando rede 'default' do libvirt..."
-if sudo virsh net-info default 2>/dev/null | grep -q "Autostart:.*yes"; then
+net_info="$(sudo LC_ALL=C virsh net-info default 2>/dev/null || true)"
+if grep -q "Autostart:.*yes" <<<"$net_info"; then
   skipped "rede default já com autostart"
 else
   sudo virsh net-autostart default
   ok "autostart habilitado na rede default"
 fi
 
-if sudo virsh net-info default 2>/dev/null | grep -q "Active:.*yes"; then
+if grep -q "Active:.*yes" <<<"$net_info"; then
   skipped "rede default já ativa"
 else
-  sudo virsh net-start default 2>/dev/null || true
+  sudo virsh net-start default
   ok "rede default iniciada"
 fi
 
@@ -62,7 +66,8 @@ fi
 ensure_cmd ufw || _finish 1
 
 info "Verificando regra UFW para rede virtual..."
-if sudo ufw status verbose 2>/dev/null | grep -q "192.168.122.0/24"; then
+ufw_status="$(sudo ufw status verbose 2>/dev/null || true)"
+if grep -qF "192.168.122.0/24" <<<"$ufw_status"; then
   skipped "regra UFW já existe"
 else
   sudo ufw route allow from 192.168.122.0/24
