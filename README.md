@@ -47,6 +47,7 @@ clone it there.
 | [`herdr-app/`](herdr-app/) | Herdr desktop, a **stow** package (`stow --no-folding`): `settings.json` and `keys.json` (Herdr's defaults plus Omarchy's direct herdr/tmux keys; `alt-hjkl` left to programs such as LazyVim), plus the `herdr-app.json.tpl` template and the `theme-set` hook that publish the current Omarchy palette as `themes/omarchy.json`. Port of omacom/omarchy PR 17118, until the installed Omarchy ships it. Herdr writes through the links and recreates them instantly if removed, so `setup-herdr-app.sh` swaps them in by atomic rename (backing up the originals as `.bak`), and only after the theme exists. |
 | [`mdm/`](mdm/) | Stow package (`stow --no-folding`) with the `misterdownloadmanager.toml.tpl` template and the `theme-set` hook that publish the current Omarchy palette as Mister Download Manager's `Omarchy` theme (`themes/omarchy.toml`). Omarchy only reads these two paths, so plain stow links are safe. The theme is only published once MDM has run and created its own data dir. Picking the theme and "Always dark" live in MDM's `downloads.json` next to the download list, so they stay out of the repo: one click per machine. |
 | [`setup/`](setup/) | Idempotent scripts that set up the machine. `setup.sh` prompts for each one; every script also runs on its own. |
+| [`test/`](test/) | Tests for the scripts, in the format of Omarchy's own: `test/shell` runs every `test/shell.d/*-test.sh`, each one in a scratch `HOME` with stubbed commands. |
 
 ## Install
 

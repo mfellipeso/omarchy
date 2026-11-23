@@ -1,0 +1,62 @@
+#!/bin/bash
+set -euo pipefail
+
+# =============================================================================
+# Roda os testes de test/shell.d/*-test.sh, no formato dos testes do Omarchy
+# (basecamp/omarchy, test/shell), sem a parte de Quickshell e compositor.
+#
+#   test/shell                                 todos
+#   bash test/shell.d/setup-android-test.sh    um só
+#
+# Cada arquivo para na primeira falha, mas o runner segue para os outros. A
+# saída de cada um fica guardada no diretório mostrado no fim.
+# =============================================================================
+
+ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
+
+tests=()
+for test in "$ROOT"/test/shell.d/*-test.sh; do
+  [[ "$(basename "$test")" == "base-test.sh" || ! -f "$test" ]] && continue
+  tests+=("$test")
+done
+if (( ${#tests[@]} == 0 )); then
+  echo "Nenhum teste em $ROOT/test/shell.d" >&2
+  exit 1
+fi
+
+workdir="$(mktemp -d -t dotfiles-test.XXXXXX)"
+export workdir
+
+run_one() {
+  local name status=0
+  name="$(basename "$1")"
+  bash "$1" >"$workdir/$name.out" 2>&1 </dev/null || status=$?
+  echo "$status" >"$workdir/$name.code"
+}
+export -f run_one
+
+printf '%s\0' "${tests[@]}" | xargs -0 -P "$(nproc)" -n 1 bash -c 'run_one "$1"' _
+
+failed=() skipped=()
+for test in "${tests[@]}"; do
+  name="$(basename "$test")"
+  printf '==> %s\n' "${test#"$ROOT"/}"
+  cat "$workdir/$name.out"
+  if [[ "$(cat "$workdir/$name.code")" != 0 ]]; then
+    failed+=("$name")
+  fi
+  if grep -q '^ok - .* # SKIP$' "$workdir/$name.out"; then
+    skipped+=("$name")
+  fi
+done
+
+echo
+if (( ${#skipped[@]} > 0 )); then
+  printf 'Com checagens puladas: %s\n' "${skipped[*]}"
+fi
+printf 'Logs: %s\n' "$workdir"
+if (( ${#failed[@]} > 0 )); then
+  printf '%d de %d arquivos falharam: %s\n' "${#failed[@]}" "${#tests[@]}" "${failed[*]}" >&2
+  exit 1
+fi
+printf '%d arquivos sem falhas.\n' "${#tests[@]}"
