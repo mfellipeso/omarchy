@@ -22,10 +22,6 @@ set -euo pipefail
 # ~/Applications, com entry e ícone em ~/.local/share — tudo na home, sem
 # pacman nem Flatpak. Quais instalar é escolha sua na janela dele.
 #
-# Estúdio de IA: ARTCRAFT_STUDIO=1 instala o pacote `artcraft` do AUR (build
-# longo: cargo-tauri + webkit2gtk; o pacote só traz o binário, sem entry no
-# menu). Desligado por padrão.
-#
 # Padrões de abertura: os entries que o Launcher escreve não declaram MimeType
 # e ele não instala as definições de MIME que cada AppImage traz, então o
 # sistema não sabe que o GridCraft abre planilha. O passo 6 registra isso para
@@ -481,15 +477,6 @@ if (( mime_changed )); then
   else
     err "update-mime-database falhou — os formatos próprios (.pcraft etc.) não serão reconhecidos"
   fi
-fi
-
-# --- 7. Estúdio de IA (opcional) ---------------------------------------------
-if [[ "${ARTCRAFT_STUDIO:-0}" == "1" ]]; then
-  info "Estúdio ArtCraft (AUR, build demorado)..."
-  aur_install artcraft || _finish 1
-  ok "estúdio instalado — abre com 'artcraft' no terminal (o pacote não traz entry no menu)"
-else
-  skipped "estúdio de IA não instalado (ARTCRAFT_STUDIO=1 instala o pacote artcraft do AUR)"
 fi
 
 ok "Pronto. Abra o ArtCraft Launcher pelo menu e instale só os apps que quiser."
