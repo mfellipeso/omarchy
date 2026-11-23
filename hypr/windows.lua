@@ -29,3 +29,13 @@ o.window({ class = "^steam_app_985810$" }, {
     -- the game's own requests.
     immediate = true,
 })
+
+-- Android Emulator: 411x923 is the Pixel 9 viewport in dp (1080x2424 at
+-- 420 dpi), so one CSS pixel is one screen pixel. The emulator's own toolbar
+-- window shares the class but already floats, so float = false leaves it out.
+o.window({ class = "^Emulator$", float = false }, {
+    float = true,
+    center = true,
+    size = { 411, 923 },
+    keep_aspect_ratio = true,
+})

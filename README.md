@@ -75,6 +75,7 @@ place.
 | 6 | `setup-hydra.sh` | Hydra Launcher as an AppImage in the home dir, self-updating. |
 | 6 | `setup-mdm.sh` | Mister Download Manager as an AppImage in the home dir, self-updating; it registers the browser integration itself on first launch. Also stows `mdm/` and publishes the Omarchy palette as MDM's `Omarchy` theme. |
 | 6 | `setup-winbox.sh` | MikroTik WinBox 4 straight from mikrotik.com, in the home dir; rerunning updates it (WinBox doesn't self-update). |
+| 7 | `setup-android.sh` | Google's Android emulator in the home dir (no Android Studio, Java from mise): a Pixel 9 with Chrome to check sites in, opened with `android-emu [URL]`. Asks before accepting the Android SDK license. |
 
 Shared helpers (package install, services, Btrfs subvolumes, idempotent line
 planting, publishing the Omarchy palette into an app) live in

@@ -32,6 +32,9 @@ SETUP_SCRIPTS=(
   setup-hydra.sh
   setup-mdm.sh
   setup-winbox.sh
+
+  # 7) Ferramentas de desenvolvimento
+  setup-android.sh
 )
 # =============================================================================
 
