@@ -17,9 +17,9 @@ o.bind("SUPER + SHIFT + L", "Toggle laptop display", "omarchy-hyprland-monitor-i
 
 -- Overrides -- each unbinds an Omarchy default before rebinding the key.
 
--- Was: Close window. Moved to SUPER + Q.
+-- Was: Close window, which Omarchy also binds to SUPER + Q. Don't bind that again
+-- here: binds stack, so one press would close twice, and that breaks virt-manager.
 hl.unbind("SUPER + W")
-o.bind("SUPER + Q", "Close window", hl.dsp.window.close())
 
 -- Was: Toggle workspace layout. Lock also stays on SUPER + CTRL + L.
 hl.unbind("SUPER + L")
